@@ -1,0 +1,10 @@
+# Maps files in btkrausen/vault-codespaces to (objectiveId, taskSlug) pairs.
+# Populate after the first run by inspecting node_modules/.ingest-cache/vault-codespaces/.
+#
+# Example:
+#   - file: "Challenges/Policies/readme.md"
+#     objectiveId: "4"
+#     taskSlug: "acl-policies"
+#     title: "Write ACL policies"
+
+mappings: []
