@@ -22,7 +22,7 @@ interface ObjectiveIndex {
   tasks: { slug: string; title: string; officialUrl: string; orderIndex: number }[];
 }
 
-const MODEL = "claude-opus-4-6";
+const MODEL = "claude-haiku-4-5";
 
 const SYSTEM_PROMPT = `Eres un profesor experto en HashiCorp Vault que escribe explicaciones "para dummies" en español, claras y concretas.
 
