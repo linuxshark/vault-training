@@ -27,7 +27,7 @@ beforeAll(async () => {
   const { execSync } = await import("node:child_process");
   process.env.DATABASE_URL = `file:${DB_PATH}`;
   process.env.CONTENT_ROOT = CONTENT_ROOT;
-  execSync("node_modules/.bin/prisma db push --skip-generate --accept-data-loss", { stdio: "ignore" });
+  execSync("node_modules/.bin/prisma db push --accept-data-loss", { stdio: "ignore" });
 
   server = spawn("node_modules/.bin/next", ["dev", "-p", "3100"], {
     stdio: "ignore",
