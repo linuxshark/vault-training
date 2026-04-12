@@ -1,4 +1,6 @@
 #!/usr/bin/env tsx
+import "dotenv/config";
+
 /**
  * Generates content/domains/<obj>/<task>/explained.mdx for every (objective, task)
  * in content/_index/objectives.json that does not already have one.
@@ -12,7 +14,6 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import Anthropic from "@anthropic-ai/sdk";
-import "dotenv/config";
 import { CONTENT_ROOT, ensureDir, taskDir, writeMdx } from "./ingest/_lib";
 
 interface ObjectiveIndex {
