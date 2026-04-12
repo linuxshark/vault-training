@@ -37,6 +37,7 @@
     "rehype-pretty-code": "^0.14.3",
     "rehype-slug": "^6.0.0",
     "remark-gfm": "^4.0.1",
+    "server-only": "^0.0.1",
     "shadcn": "^4.2.0",
     "shiki": "^4.0.2",
     "sonner": "^2.0.7",
@@ -47,6 +48,7 @@
   "devDependencies": {
     "@anthropic-ai/sdk": "^0.88.0",
     "@playwright/test": "^1.59.1",
+    "@tailwindcss/typography": "^0.5.19",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@types/node": "^20.19.39",
