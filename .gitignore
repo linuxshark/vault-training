@@ -35,9 +35,9 @@ yarn-error.log*
 .env.local
 
 # data
-/data
 /data/*.db
 /data/*.db-journal
+!/data/.gitkeep
 
 # test artifacts
 /test-results
