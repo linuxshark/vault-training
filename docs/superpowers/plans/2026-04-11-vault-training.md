@@ -133,14 +133,17 @@ vault-training/
 ### Task 1: Initialize Next.js project
 
 **Files:**
+
 - Create: `package.json`, `tsconfig.json`, `next.config.mjs`, `postcss.config.mjs`, `tailwind.config.ts`, `app/layout.tsx`, `app/page.tsx`, `app/globals.css`, `.gitignore` (append)
 
 - [ ] **Step 1: Run the Next.js scaffolder (non-interactive)**
 
 Run from the project root:
+
 ```bash
 npx create-next-app@14 . --typescript --tailwind --app --eslint --no-src-dir --import-alias "@/*" --use-npm --no-turbopack
 ```
+
 When prompted about non-empty dir, confirm. Expected: new files created, git not reinitialized (already a repo).
 
 - [ ] **Step 2: Verify it runs**
@@ -148,11 +151,13 @@ When prompted about non-empty dir, confirm. Expected: new files created, git not
 ```bash
 npm run dev
 ```
+
 Open `http://localhost:3000`. Expected: default Next.js landing page renders. Stop with `Ctrl+C`.
 
 - [ ] **Step 3: Append to `.gitignore`**
 
 Open `.gitignore` and ensure these entries exist (create if missing):
+
 ```
 # environment
 .env.local
@@ -189,6 +194,7 @@ git commit -m "feat: scaffold Next.js app with App Router and Tailwind"
 ### Task 2: Configure TypeScript strict and path aliases
 
 **Files:**
+
 - Modify: `tsconfig.json`
 
 - [ ] **Step 1: Replace `tsconfig.json` contents**
@@ -218,12 +224,7 @@ git commit -m "feat: scaffold Next.js app with App Router and Tailwind"
       "@/*": ["./*"]
     }
   },
-  "include": [
-    "next-env.d.ts",
-    "**/*.ts",
-    "**/*.tsx",
-    ".next/types/**/*.ts"
-  ],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
   "exclude": ["node_modules"]
 }
 ```
@@ -233,6 +234,7 @@ git commit -m "feat: scaffold Next.js app with App Router and Tailwind"
 ```bash
 npx tsc --noEmit
 ```
+
 Expected: no errors.
 
 - [ ] **Step 3: Commit**
@@ -247,6 +249,7 @@ git commit -m "chore: enable strict TypeScript with noUncheckedIndexedAccess"
 ### Task 3: Install core runtime dependencies
 
 **Files:**
+
 - Modify: `package.json` (via `npm install`)
 
 - [ ] **Step 1: Install runtime deps**
@@ -266,6 +269,7 @@ npm install -D prisma tsx vitest @vitest/ui @testing-library/react @testing-libr
 ```bash
 npm ls --depth=0 2>&1 | grep -E "(UNMET|missing|invalid)" || echo "OK"
 ```
+
 Expected: `OK`.
 
 - [ ] **Step 4: Commit**
@@ -280,6 +284,7 @@ git commit -m "chore: add runtime and dev dependencies"
 ### Task 4: Configure Tailwind with semantic design tokens
 
 **Files:**
+
 - Modify: `tailwind.config.ts`
 - Modify: `app/globals.css`
 
@@ -290,11 +295,7 @@ import type { Config } from "tailwindcss";
 
 const config: Config = {
   darkMode: "class",
-  content: [
-    "./app/**/*.{ts,tsx,mdx}",
-    "./components/**/*.{ts,tsx}",
-    "./content/**/*.mdx",
-  ],
+  content: ["./app/**/*.{ts,tsx,mdx}", "./components/**/*.{ts,tsx}", "./content/**/*.mdx"],
   theme: {
     extend: {
       colors: {
@@ -378,7 +379,9 @@ export default config;
     font-size: 0.875rem;
     line-height: 1.65;
   }
-  code, pre, kbd {
+  code,
+  pre,
+  kbd {
     font-family: "IBM Plex Mono", ui-monospace, monospace;
   }
   :focus-visible {
@@ -386,7 +389,9 @@ export default config;
     outline-offset: 2px;
   }
   @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after {
+    *,
+    *::before,
+    *::after {
       animation-duration: 0.01ms !important;
       transition-duration: 0.01ms !important;
     }
@@ -409,7 +414,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="es" className="dark">
       <body>
-        <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:bg-accent focus:text-accent-fg focus:px-3 focus:py-2 focus:rounded">
+        <a
+          href="#main"
+          className="sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:rounded focus:bg-accent focus:px-3 focus:py-2 focus:text-accent-fg"
+        >
           Saltar al contenido
         </a>
         {children}
@@ -424,8 +432,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 ```tsx
 export default function Home() {
   return (
-    <main id="main" className="min-h-screen grid place-items-center p-8">
-      <div className="text-center space-y-2">
+    <main id="main" className="grid min-h-screen place-items-center p-8">
+      <div className="space-y-2 text-center">
         <h1 className="text-2xl font-bold">Vault Training</h1>
         <p className="text-text-muted">Scaffolding en progreso…</p>
       </div>
@@ -439,6 +447,7 @@ export default function Home() {
 ```bash
 npm run dev
 ```
+
 Open `http://localhost:3000`. Expected: dark page, "Vault Training" heading visible, "Scaffolding en progreso…" in muted gray. Stop.
 
 - [ ] **Step 6: Commit**
@@ -453,6 +462,7 @@ git commit -m "feat: apply dark theme tokens and base typography"
 ### Task 5: Self-host Inter and IBM Plex Mono
 
 **Files:**
+
 - Create: `app/fonts.ts`
 - Modify: `app/layout.tsx`
 
@@ -478,6 +488,7 @@ export const plexMono = IBM_Plex_Mono({
 - [ ] **Step 2: Apply fonts in `app/layout.tsx`**
 
 Replace contents with:
+
 ```tsx
 import type { Metadata } from "next";
 import "./globals.css";
@@ -492,7 +503,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="es" className={`dark ${inter.variable} ${plexMono.variable}`}>
       <body className="font-sans">
-        <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:bg-accent focus:text-accent-fg focus:px-3 focus:py-2 focus:rounded">
+        <a
+          href="#main"
+          className="sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:rounded focus:bg-accent focus:px-3 focus:py-2 focus:text-accent-fg"
+        >
           Saltar al contenido
         </a>
         {children}
@@ -505,6 +519,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 - [ ] **Step 3: Update `tailwind.config.ts` fontFamily to reference CSS variables**
 
 Change the `fontFamily` block to:
+
 ```ts
 fontFamily: {
   sans: ["var(--font-inter)", "system-ui", "sans-serif"],
@@ -517,6 +532,7 @@ fontFamily: {
 ```bash
 npm run dev
 ```
+
 Inspect the page; the heading should render in Inter. Stop.
 
 - [ ] **Step 5: Commit**
@@ -531,6 +547,7 @@ git commit -m "feat: self-host Inter and IBM Plex Mono via next/font"
 ### Task 6: Initialize shadcn/ui
 
 **Files:**
+
 - Create: `components.json`, `lib/utils.ts`, `components/ui/*`
 
 - [ ] **Step 1: Run shadcn init**
@@ -538,6 +555,7 @@ git commit -m "feat: self-host Inter and IBM Plex Mono via next/font"
 ```bash
 npx shadcn@latest init -d --base-color neutral --css-variables false
 ```
+
 Accept defaults; keep `components` alias as `@/components`, `utils` alias as `@/lib/utils`.
 
 - [ ] **Step 2: Add initial components**
@@ -545,6 +563,7 @@ Accept defaults; keep `components` alias as `@/components`, `utils` alias as `@/
 ```bash
 npx shadcn@latest add button tabs dialog tooltip sonner separator input textarea
 ```
+
 Accept overwrites if prompted.
 
 - [ ] **Step 3: Verify compilation**
@@ -552,6 +571,7 @@ Accept overwrites if prompted.
 ```bash
 npx tsc --noEmit
 ```
+
 Expected: no errors.
 
 - [ ] **Step 4: Commit**
@@ -566,6 +586,7 @@ git commit -m "feat: add shadcn/ui primitives (button, tabs, dialog, etc.)"
 ### Task 7: Configure Prettier + ESLint
 
 **Files:**
+
 - Create: `.prettierrc.json`, `.prettierignore`
 - Modify: `eslint.config.mjs`
 
@@ -602,6 +623,7 @@ test-results
 - [ ] **Step 4: Add format scripts to `package.json`**
 
 Under `scripts`, add:
+
 ```json
 "format": "prettier --write .",
 "format:check": "prettier --check .",
@@ -613,6 +635,7 @@ Under `scripts`, add:
 ```bash
 npm run format
 ```
+
 Expected: files formatted.
 
 - [ ] **Step 6: Commit**
@@ -629,6 +652,7 @@ git commit -m "chore: configure Prettier with Tailwind plugin and add format scr
 ### Task 8: Write Prisma schema
 
 **Files:**
+
 - Create: `prisma/schema.prisma`
 - Create: `.env.example`, `.env.local`
 
@@ -727,6 +751,7 @@ mkdir -p data && touch data/.gitkeep
 npx prisma generate
 npx prisma db push
 ```
+
 Expected: `data/vault-training.db` created, schema applied.
 
 - [ ] **Step 6: Commit (exclude .env.local and DB file — ignored)**
@@ -741,6 +766,7 @@ git commit -m "feat: Prisma schema for objectives, tasks, progress, notes, sessi
 ### Task 9: Prisma client singleton
 
 **Files:**
+
 - Create: `lib/prisma.ts`
 
 - [ ] **Step 1: Create `lib/prisma.ts`**
@@ -766,6 +792,7 @@ if (process.env.NODE_ENV !== "production") {
 ```bash
 npx tsc --noEmit
 ```
+
 Expected: no errors.
 
 - [ ] **Step 3: Commit**
@@ -782,6 +809,7 @@ git commit -m "feat: Prisma client singleton"
 ### Task 10: Vitest configuration
 
 **Files:**
+
 - Create: `vitest.config.ts`, `tests/setup.ts`
 
 - [ ] **Step 1: Create `vitest.config.ts`**
@@ -814,6 +842,7 @@ process.env.DATABASE_URL ??= "file:./data/test.db";
 - [ ] **Step 3: Add test scripts to `package.json`**
 
 Under `scripts`:
+
 ```json
 "test": "vitest run",
 "test:watch": "vitest",
@@ -832,6 +861,7 @@ git commit -m "chore: configure Vitest with node env and path alias"
 ### Task 11: Frontmatter Zod schema — tests first
 
 **Files:**
+
 - Create: `tests/unit/frontmatter.test.ts`
 
 - [ ] **Step 1: Create failing test file**
@@ -903,6 +933,7 @@ describe("FrontmatterSchema", () => {
 ```bash
 npm test -- frontmatter
 ```
+
 Expected: FAIL with "Cannot find module '@/lib/content/frontmatter'".
 
 - [ ] **Step 3: Implement `lib/content/frontmatter.ts`**
@@ -936,6 +967,7 @@ export type Frontmatter = z.infer<typeof FrontmatterSchema>;
 ```bash
 npm test -- frontmatter
 ```
+
 Expected: 9 tests PASS.
 
 - [ ] **Step 5: Commit**
@@ -950,6 +982,7 @@ git commit -m "feat: Zod schema and types for MDX frontmatter"
 ### Task 12: Fixture content for tests
 
 **Files:**
+
 - Create: `tests/fixtures/sample-content/_index/objectives.json`
 - Create: `tests/fixtures/sample-content/domains/3-secrets/kv-v2/explained.mdx`
 - Create: `tests/fixtures/sample-content/domains/3-secrets/kv-v2/notes.mdx`
@@ -965,9 +998,7 @@ git commit -m "feat: Zod schema and types for MDX frontmatter"
     "slug": "secrets",
     "title": "Manage secrets engines",
     "orderIndex": 3,
-    "tasks": [
-      { "slug": "kv-v2", "title": "KV v2 versioning", "orderIndex": 1 }
-    ]
+    "tasks": [{ "slug": "kv-v2", "title": "KV v2 versioning", "orderIndex": 1 }]
   }
 ]
 ```
@@ -1053,6 +1084,7 @@ git commit -m "test: add sample content fixtures for loader tests"
 ### Task 13: Content loader — tests first
 
 **Files:**
+
 - Create: `tests/unit/loader.test.ts`
 
 - [ ] **Step 1: Create failing test**
@@ -1104,6 +1136,7 @@ describe("loadTask", () => {
 ```bash
 npm test -- loader
 ```
+
 Expected: FAIL (module not found).
 
 - [ ] **Step 3: Implement `lib/content/loader.ts`**
@@ -1194,6 +1227,7 @@ export async function loadTask(objectiveId: string, taskSlug: string): Promise<L
 ```bash
 npm test -- loader
 ```
+
 Expected: 4 tests PASS.
 
 - [ ] **Step 5: Commit**
@@ -1208,6 +1242,7 @@ git commit -m "feat: content loader with objective index and task triple-MDX res
 ### Task 14: MDX compilation helper
 
 **Files:**
+
 - Create: `lib/content/mdx.ts`
 
 - [ ] **Step 1: Create `lib/content/mdx.ts`**
@@ -1255,6 +1290,7 @@ git commit -m "feat: MDX compile helper (components wired later)"
 ### Task 15: Seed tests first
 
 **Files:**
+
 - Create: `tests/integration/seed.test.ts`
 
 - [ ] **Step 1: Create failing test**
@@ -1332,6 +1368,7 @@ describe("seedCatalog", () => {
 ```bash
 npm test -- seed
 ```
+
 Expected: FAIL (module not found).
 
 - [ ] **Step 3: Implement `lib/seed.ts`**
@@ -1388,6 +1425,7 @@ export async function seedCatalog(prisma: PrismaClient): Promise<void> {
 ```bash
 npm test -- seed
 ```
+
 Expected: 4 tests PASS.
 
 - [ ] **Step 5: Commit**
@@ -1404,6 +1442,7 @@ git commit -m "feat: catalog seed with idempotent upsert and hidden-task handlin
 ### Task 16: Progress library
 
 **Files:**
+
 - Create: `tests/unit/progress.test.ts`
 - Create: `lib/progress.ts`
 
@@ -1502,8 +1541,12 @@ export async function setStatus(
   const existing = await prisma.taskProgress.findUnique({ where: { taskId } });
 
   const reviewedAt =
-    status === "REVIEWED" ? now : status === "MASTERED" ? (existing?.reviewedAt ?? now) : existing?.reviewedAt ?? null;
-  const masteredAt = status === "MASTERED" ? now : existing?.masteredAt ?? null;
+    status === "REVIEWED"
+      ? now
+      : status === "MASTERED"
+        ? (existing?.reviewedAt ?? now)
+        : (existing?.reviewedAt ?? null);
+  const masteredAt = status === "MASTERED" ? now : (existing?.masteredAt ?? null);
   const firstSeen = existing?.firstSeen ?? now;
 
   return prisma.taskProgress.upsert({
@@ -1529,6 +1572,7 @@ export async function touchVisit(prisma: PrismaClient, taskId: string): Promise<
 ```bash
 npm test -- progress
 ```
+
 Expected: 6 tests PASS.
 
 - [ ] **Step 5: Commit**
@@ -1543,6 +1587,7 @@ git commit -m "feat: progress library with state transitions and firstSeen prese
 ### Task 17: Notes library
 
 **Files:**
+
 - Create: `tests/unit/notes.test.ts`
 - Create: `lib/notes.ts`
 
@@ -1632,6 +1677,7 @@ export async function saveNote(
 ```bash
 npm test -- notes
 ```
+
 Expected: 4 tests PASS.
 
 - [ ] **Step 5: Commit**
@@ -1648,6 +1694,7 @@ git commit -m "feat: notes library with upsert and whitespace normalization"
 ### Task 18: Health endpoint
 
 **Files:**
+
 - Create: `app/api/health/route.ts`
 
 - [ ] **Step 1: Create `app/api/health/route.ts`**
@@ -1686,6 +1733,7 @@ npm run dev
 # In another terminal:
 curl -sS http://localhost:3000/api/health | head -c 200
 ```
+
 Expected: `{"status":"ok","checks":{"db":true,"content":false}}` (content false until ingestion has run; db true). Stop dev.
 
 - [ ] **Step 3: Commit**
@@ -1700,6 +1748,7 @@ git commit -m "feat: /api/health with DB and content checks"
 ### Task 19: Progress API route
 
 **Files:**
+
 - Create: `app/api/progress/[taskId]/route.ts`
 
 - [ ] **Step 1: Create the route**
@@ -1753,6 +1802,7 @@ git commit -m "feat: /api/progress with GET and PATCH (status | visit)"
 ### Task 20: Notes API route
 
 **Files:**
+
 - Create: `app/api/notes/[taskId]/route.ts`
 
 - [ ] **Step 1: Create the route**
@@ -1799,6 +1849,7 @@ git commit -m "feat: /api/notes with GET and PUT"
 ### Task 21: Dev seed entrypoint
 
 **Files:**
+
 - Create: `app/seed-dev.tsx` — NO. Instead, ensure seed runs at dev startup.
 - Create: `lib/ensure-seed.ts`
 - Modify: `app/layout.tsx`
@@ -1826,11 +1877,13 @@ export async function ensureSeed(): Promise<void> {
 - [ ] **Step 2: Invoke from `app/layout.tsx`**
 
 Add at the top of the file, after imports:
+
 ```tsx
 import { ensureSeed } from "@/lib/ensure-seed";
 ```
 
 And call it inside the default export, before returning JSX:
+
 ```tsx
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   await ensureSeed();
@@ -1855,6 +1908,7 @@ npm run dev
 # In another terminal:
 curl -sS http://localhost:3000/api/health
 ```
+
 Expected: `{"status":"ok","checks":{"db":true,"content":true}}`.
 
 - [ ] **Step 5: Commit** (do NOT commit `content/` — it's dev-only. Actually we WILL commit it as the initial seed; it is overwritten by ingestion later.)
@@ -1876,6 +1930,7 @@ Correction: the spec (§8.4) calls for committing `content/` after `npm run seed
 ### Task 22: API smoke test (integration)
 
 **Files:**
+
 - Create: `tests/integration/api.test.ts`
 
 - [ ] **Step 1: Test file**
@@ -1967,6 +2022,7 @@ describe("HTTP API", () => {
 ```bash
 npm test -- api
 ```
+
 Expected: 3 tests PASS. This test spawns a real Next dev server against the fixture DB.
 
 - [ ] **Step 3: Commit**
@@ -1983,6 +2039,7 @@ git commit -m "test: integration tests for health, progress, notes APIs"
 ### Task 23: StatusPill component
 
 **Files:**
+
 - Create: `components/status-pill.tsx`
 
 - [ ] **Step 1: Create the component**
@@ -2022,7 +2079,7 @@ export function StatusPill({
       className={cn(
         "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium",
         styles[status],
-        onClick && "cursor-pointer hover:brightness-125 transition-all duration-micro",
+        onClick && "cursor-pointer transition-all duration-micro hover:brightness-125",
         className,
       )}
     >
@@ -2045,6 +2102,7 @@ git commit -m "feat: StatusPill component with four states"
 ### Task 24: Topbar component
 
 **Files:**
+
 - Create: `components/topbar.tsx`
 
 - [ ] **Step 1: Create**
@@ -2056,15 +2114,21 @@ import { Lock } from "lucide-react";
 export function Topbar({ globalProgress }: { globalProgress?: number }) {
   return (
     <header className="flex h-12 items-center justify-between border-b border-border-subtle bg-surface px-4">
-      <Link href="/" className="flex items-center gap-2 text-text hover:text-accent transition-colors">
+      <Link
+        href="/"
+        className="flex items-center gap-2 text-text transition-colors hover:text-accent"
+      >
         <Lock className="size-4 text-accent" />
         <span className="font-semibold tracking-tight">Vault Training</span>
       </Link>
       {typeof globalProgress === "number" && (
         <div className="flex items-center gap-3 text-xs text-text-muted">
           <span>{Math.round(globalProgress)}% completado</span>
-          <div className="h-1.5 w-32 rounded-full bg-surface-2 overflow-hidden">
-            <div className="h-full bg-accent transition-all duration-state" style={{ width: `${globalProgress}%` }} />
+          <div className="h-1.5 w-32 overflow-hidden rounded-full bg-surface-2">
+            <div
+              className="h-full bg-accent transition-all duration-state"
+              style={{ width: `${globalProgress}%` }}
+            />
           </div>
         </div>
       )}
@@ -2085,6 +2149,7 @@ git commit -m "feat: Topbar with logo and global progress indicator"
 ### Task 25: SidebarNav component
 
 **Files:**
+
 - Create: `components/sidebar-nav.tsx`
 
 - [ ] **Step 1: Create**
@@ -2124,7 +2189,10 @@ export function SidebarNav({
   activeTask?: string;
 }) {
   return (
-    <nav aria-label="Objetivos" className="flex h-full flex-col gap-4 overflow-y-auto border-r border-border-subtle bg-surface px-3 py-4">
+    <nav
+      aria-label="Objetivos"
+      className="flex h-full flex-col gap-4 overflow-y-auto border-r border-border-subtle bg-surface px-3 py-4"
+    >
       {objectives.map((obj) => (
         <div key={obj.id}>
           <div className="px-2 text-[10px] font-semibold uppercase tracking-wider text-text-dim">
@@ -2141,7 +2209,7 @@ export function SidebarNav({
                     className={cn(
                       "flex items-center gap-2 rounded px-2 py-1.5 text-sm transition-colors duration-micro",
                       isActive
-                        ? "bg-accent/10 text-accent border-l-2 border-accent pl-1.5"
+                        ? "border-l-2 border-accent bg-accent/10 pl-1.5 text-accent"
                         : "text-text hover:bg-surface-2",
                     )}
                   >
@@ -2171,6 +2239,7 @@ git commit -m "feat: SidebarNav with objectives and status icons"
 ### Task 26: AppShell layout
 
 **Files:**
+
 - Create: `components/app-shell.tsx`
 
 - [ ] **Step 1: Create**
@@ -2217,6 +2286,7 @@ git commit -m "feat: AppShell three-column layout"
 ### Task 27: CopyCmd MDX component
 
 **Files:**
+
 - Create: `components/mdx/copy-cmd.tsx`
 
 - [ ] **Step 1: Create**
@@ -2266,6 +2336,7 @@ git commit -m "feat: CopyCmd MDX component with clipboard copy"
 ### Task 28: Analogy, Callout, VaultOutput, Toggle
 
 **Files:**
+
 - Create: `components/mdx/analogy.tsx`
 - Create: `components/mdx/callout.tsx`
 - Create: `components/mdx/vault-output.tsx`
@@ -2277,7 +2348,9 @@ git commit -m "feat: CopyCmd MDX component with clipboard copy"
 export function Analogy({ children }: { children: React.ReactNode }) {
   return (
     <aside className="my-4 rounded-r-md border-l-[3px] border-accent bg-accent/5 px-4 py-3 text-sm text-text">
-      <div className="mb-1 text-[10px] font-bold uppercase tracking-wider text-accent">Analogía</div>
+      <div className="mb-1 text-[10px] font-bold uppercase tracking-wider text-accent">
+        Analogía
+      </div>
       {children}
     </aside>
   );
@@ -2292,7 +2365,12 @@ import { cn } from "@/lib/utils";
 
 const variants = {
   info: { icon: Info, color: "text-blue", border: "border-blue/40", bg: "bg-blue/5" },
-  warning: { icon: AlertTriangle, color: "text-amber", border: "border-amber/40", bg: "bg-amber/5" },
+  warning: {
+    icon: AlertTriangle,
+    color: "text-amber",
+    border: "border-amber/40",
+    bg: "bg-amber/5",
+  },
   success: { icon: CheckCircle2, color: "text-green", border: "border-green/40", bg: "bg-green/5" },
 };
 
@@ -2319,7 +2397,7 @@ export function Callout({
 ```tsx
 export function VaultOutput({ children }: { children: React.ReactNode }) {
   return (
-    <pre className="my-3 rounded-md border border-border-subtle bg-[#010409] px-4 py-3 font-mono text-xs text-text-muted overflow-x-auto">
+    <pre className="my-3 overflow-x-auto rounded-md border border-border-subtle bg-[#010409] px-4 py-3 font-mono text-xs text-text-muted">
       {children}
     </pre>
   );
@@ -2334,13 +2412,7 @@ import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export function Toggle({
-  summary,
-  children,
-}: {
-  summary: string;
-  children: React.ReactNode;
-}) {
+export function Toggle({ summary, children }: { summary: string; children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
   return (
     <div className="my-3 rounded-md border border-border-subtle">
@@ -2348,7 +2420,7 @@ export function Toggle({
         type="button"
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
-        className="flex w-full items-center justify-between px-3 py-2 text-sm text-text hover:bg-surface-2 transition-colors duration-micro"
+        className="flex w-full items-center justify-between px-3 py-2 text-sm text-text transition-colors duration-micro hover:bg-surface-2"
       >
         <span>{summary}</span>
         <ChevronDown
@@ -2384,6 +2456,7 @@ export const mdxComponents = {
 ```bash
 npx tsc --noEmit
 ```
+
 Expected: no errors (including `lib/content/mdx.ts` from Task 14, which now resolves `mdxComponents`).
 
 - [ ] **Step 7: Commit**
@@ -2400,6 +2473,7 @@ git commit -m "feat: MDX components (Analogy, Callout, VaultOutput, Toggle) and 
 ### Task 29: Dashboard page
 
 **Files:**
+
 - Create: `components/objective-card.tsx`
 - Replace: `app/page.tsx`
 - Create: `lib/dashboard.ts`
@@ -2454,7 +2528,10 @@ export async function getDashboard(): Promise<{
   });
 
   const totalTasks = rows.reduce((s, r) => s + r.taskCount, 0);
-  const globalPercent = totalTasks === 0 ? 0 : rows.reduce((s, r) => s + (r.percent * r.taskCount) / 100, 0) * 100 / totalTasks;
+  const globalPercent =
+    totalTasks === 0
+      ? 0
+      : (rows.reduce((s, r) => s + (r.percent * r.taskCount) / 100, 0) * 100) / totalTasks;
 
   const lastProgress = await prisma.taskProgress.findFirst({
     orderBy: { lastVisit: "desc" },
@@ -2528,8 +2605,11 @@ export function ObjectiveCard({ obj }: { obj: DashboardObjective }) {
         <div className="text-sm font-medium text-accent">{Math.round(obj.percent)}%</div>
       </div>
       <h3 className="text-md font-semibold leading-tight text-text">{obj.title}</h3>
-      <div className="h-1.5 rounded-full bg-surface-2 overflow-hidden">
-        <div className="h-full bg-accent transition-all duration-state" style={{ width: `${obj.percent}%` }} />
+      <div className="h-1.5 overflow-hidden rounded-full bg-surface-2">
+        <div
+          className="h-full bg-accent transition-all duration-state"
+          style={{ width: `${obj.percent}%` }}
+        />
       </div>
       <div className="flex items-center justify-between text-xs text-text-muted">
         <span>
@@ -2590,6 +2670,7 @@ export default async function DashboardPage() {
 ```bash
 npm run dev
 ```
+
 Open `/`. Expected: dashboard renders with at least 1 objective card (from fixture). Stop.
 
 - [ ] **Step 5: Commit**
@@ -2604,6 +2685,7 @@ git commit -m "feat: dashboard page with objective cards and resume-last-task"
 ### Task 30: Objective page
 
 **Files:**
+
 - Create: `app/domains/[objectiveSlug]/page.tsx`
 
 - [ ] **Step 1: Create**
@@ -2617,11 +2699,7 @@ import { StatusPill } from "@/components/status-pill";
 import { getSidebarObjectives } from "@/lib/dashboard";
 import { prisma } from "@/lib/prisma";
 
-export default async function ObjectiveView({
-  params,
-}: {
-  params: { objectiveSlug: string };
-}) {
+export default async function ObjectiveView({ params }: { params: { objectiveSlug: string } }) {
   const objective = await prisma.objective.findUnique({
     where: { slug: params.objectiveSlug },
     include: {
@@ -2676,11 +2754,12 @@ git commit -m "feat: objective overview page with task list"
 ### Task 31: TaskView page skeleton
 
 **Files:**
+
 - Create: `app/domains/[objectiveSlug]/[taskSlug]/page.tsx`
 
 - [ ] **Step 1: Create**
 
-```tsx
+````tsx
 import { notFound } from "next/navigation";
 import { AppShell } from "@/components/app-shell";
 import { SidebarNav } from "@/components/sidebar-nav";
@@ -2715,7 +2794,8 @@ export default async function TaskView({
   ]);
 
   const sidebar = await getSidebarObjectives();
-  const title = loaded.explained?.frontmatter.title ?? loaded.notes?.frontmatter.title ?? params.taskSlug;
+  const title =
+    loaded.explained?.frontmatter.title ?? loaded.notes?.frontmatter.title ?? params.taskSlug;
 
   // Adjacent tasks for footer nav
   const tasksInOrder = await prisma.task.findMany({
@@ -2724,7 +2804,10 @@ export default async function TaskView({
   });
   const currentIndex = tasksInOrder.findIndex((t) => t.slug === params.taskSlug);
   const prev = currentIndex > 0 ? tasksInOrder[currentIndex - 1] : undefined;
-  const next = currentIndex >= 0 && currentIndex < tasksInOrder.length - 1 ? tasksInOrder[currentIndex + 1] : undefined;
+  const next =
+    currentIndex >= 0 && currentIndex < tasksInOrder.length - 1
+      ? tasksInOrder[currentIndex + 1]
+      : undefined;
 
   return (
     <AppShell
@@ -2792,7 +2875,7 @@ function extractCommands(body: string): string[] {
   }
   return cmds.slice(0, 20);
 }
-```
+````
 
 - [ ] **Step 2: Commit** (components referenced here are created in the next tasks)
 
@@ -2806,6 +2889,7 @@ git commit -m "feat: TaskView page wiring (components in next tasks)"
 ### Task 32: TabSwitcher component
 
 **Files:**
+
 - Create: `components/tab-switcher.tsx`
 
 - [ ] **Step 1: Create**
@@ -2839,7 +2923,8 @@ export function TabSwitcher({
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if (e.target instanceof HTMLElement && ["INPUT", "TEXTAREA"].includes(e.target.tagName)) return;
+      if (e.target instanceof HTMLElement && ["INPUT", "TEXTAREA"].includes(e.target.tagName))
+        return;
       if (e.key === "1" && panels.explained) setActive("explained");
       else if (e.key === "2" && panels.notes) setActive("notes");
       else if (e.key === "3" && panels.lab) setActive("lab");
@@ -2882,7 +2967,7 @@ export function TabSwitcher({
                   active === key
                     ? "border-accent text-text"
                     : "border-transparent text-text-muted hover:text-text",
-                  disabled && "opacity-40 cursor-not-allowed",
+                  disabled && "cursor-not-allowed opacity-40",
                 )}
               >
                 {TAB_LABELS[key]}
@@ -2892,7 +2977,7 @@ export function TabSwitcher({
         </div>
         <StatusPill status={status} onClick={() => void advance(nextStatus(status))} />
       </div>
-      <div className="prose prose-invert max-w-none prose-headings:font-semibold prose-code:font-mono prose-code:text-sm prose-pre:bg-[#010409] prose-a:text-blue">
+      <div className="prose prose-invert prose-headings:font-semibold prose-code:font-mono prose-code:text-sm prose-pre:bg-[#010409] prose-a:text-blue max-w-none">
         {panels[active]}
       </div>
     </div>
@@ -2926,6 +3011,7 @@ npm install -D @tailwindcss/typography
 ```
 
 Update `tailwind.config.ts` plugins:
+
 ```ts
 plugins: [require("@tailwindcss/typography")],
 ```
@@ -2942,6 +3028,7 @@ git commit -m "feat: TabSwitcher with keyboard shortcuts and inline status advan
 ### Task 33: RightPanel, CommandList, NoteEditor, FooterNav, LabLauncher, Toc
 
 **Files:**
+
 - Create: `components/right-panel.tsx`, `components/command-list.tsx`, `components/note-editor.tsx`, `components/footer-nav.tsx`, `components/lab-launcher.tsx`, `components/toc.tsx`
 - Create: `lib/hooks/use-autosave.ts`
 
@@ -3129,16 +3216,22 @@ export function FooterNav({
   return (
     <footer className="mt-8 flex items-center justify-between border-t border-border-subtle pt-4 text-sm">
       {prevHref ? (
-        <Link href={prevHref} className="inline-flex items-center gap-2 text-text-muted hover:text-text">
+        <Link
+          href={prevHref}
+          className="inline-flex items-center gap-2 text-text-muted hover:text-text"
+        >
           <ArrowLeft className="size-4" />
-          <span className="truncate max-w-[18ch]">{prevLabel}</span>
+          <span className="max-w-[18ch] truncate">{prevLabel}</span>
         </Link>
       ) : (
         <span />
       )}
       {nextHref ? (
-        <Link href={nextHref} className="inline-flex items-center gap-2 text-text hover:text-accent">
-          <span className="truncate max-w-[18ch]">{nextLabel}</span>
+        <Link
+          href={nextHref}
+          className="inline-flex items-center gap-2 text-text hover:text-accent"
+        >
+          <span className="max-w-[18ch] truncate">{nextLabel}</span>
           <ArrowRight className="size-4" />
         </Link>
       ) : (
@@ -3170,22 +3263,33 @@ export function RightPanel({
   return (
     <div className="h-full space-y-6 overflow-y-auto border-l border-border-subtle bg-surface px-4 py-5 text-sm">
       <section>
-        <h4 className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-text-dim">En esta página</h4>
+        <h4 className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-text-dim">
+          En esta página
+        </h4>
         <Toc />
       </section>
       <section>
-        <h4 className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-text-dim">Laboratorio</h4>
+        <h4 className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-text-dim">
+          Laboratorio
+        </h4>
         <LabLauncher url={labLink?.url} />
         <div className="mt-3">
           <CommandList commands={labCommands} />
         </div>
       </section>
       <section>
-        <h4 className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-text-dim">Enlaces externos</h4>
+        <h4 className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-text-dim">
+          Enlaces externos
+        </h4>
         <ul className="space-y-1 text-xs">
           {externalLinks.map((l) => (
             <li key={l.url}>
-              <a href={l.url} target="_blank" rel="noreferrer noopener" className="text-blue hover:underline">
+              <a
+                href={l.url}
+                target="_blank"
+                rel="noreferrer noopener"
+                className="text-blue hover:underline"
+              >
                 {l.label} ↗
               </a>
             </li>
@@ -3193,7 +3297,9 @@ export function RightPanel({
         </ul>
       </section>
       <section>
-        <h4 className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-text-dim">Mis notas</h4>
+        <h4 className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-text-dim">
+          Mis notas
+        </h4>
         <NoteEditor taskId={taskId} />
       </section>
     </div>
@@ -3206,6 +3312,7 @@ export function RightPanel({
 ```bash
 npm run dev
 ```
+
 Visit `/domains/secrets/kv-v2`. Expected: 3-column layout, tabs, explain content renders, right panel shows commands and note editor. Stop.
 
 - [ ] **Step 9: Commit**
@@ -3220,6 +3327,7 @@ git commit -m "feat: RightPanel with TOC, lab launcher, command list, and autosa
 ### Task 34: Global keyboard shortcuts hook (j/k navigation + focus)
 
 **Files:**
+
 - Create: `lib/hooks/use-keyboard-shortcuts.ts`
 - Create: `components/keyboard-shortcuts.tsx` (client component wrapper)
 - Modify: `app/layout.tsx`
@@ -3242,7 +3350,8 @@ export function useKeyboardShortcuts() {
 
   useEffect(() => {
     async function handler(e: KeyboardEvent) {
-      if (e.target instanceof HTMLElement && ["INPUT", "TEXTAREA"].includes(e.target.tagName)) return;
+      if (e.target instanceof HTMLElement && ["INPUT", "TEXTAREA"].includes(e.target.tagName))
+        return;
       if (e.metaKey || e.ctrlKey || e.altKey) return;
 
       if (e.key === "n") {
@@ -3309,6 +3418,7 @@ export async function GET(req: NextRequest) {
 - [ ] **Step 4: Mount `KeyboardShortcuts` in `app/layout.tsx`**
 
 Add import and place before `{children}`:
+
 ```tsx
 import { KeyboardShortcuts } from "@/components/keyboard-shortcuts";
 // ...
@@ -3316,7 +3426,7 @@ import { KeyboardShortcuts } from "@/components/keyboard-shortcuts";
   {/* ... skip link ... */}
   <KeyboardShortcuts />
   {children}
-</body>
+</body>;
 ```
 
 - [ ] **Step 5: Commit**
@@ -3331,6 +3441,7 @@ git commit -m "feat: global keyboard shortcuts (j/k/n) and /api/nav helper"
 ### Task 35: Review and Notes index pages
 
 **Files:**
+
 - Create: `app/review/page.tsx`, `app/notes/page.tsx`
 
 - [ ] **Step 1: `app/review/page.tsx`**
@@ -3419,7 +3530,10 @@ export default async function NotesIndex() {
             <h2 className="text-lg font-semibold">{title}</h2>
             <ul className="space-y-3">
               {items.map((n) => (
-                <li key={n.taskId} className="rounded-md border border-border-subtle bg-surface p-3">
+                <li
+                  key={n.taskId}
+                  className="rounded-md border border-border-subtle bg-surface p-3"
+                >
                   <Link
                     href={`/domains/${n.task.objective.slug}/${n.task.slug}`}
                     className="block text-sm font-medium text-text hover:text-accent"
@@ -3452,6 +3566,7 @@ git commit -m "feat: /review and /notes index pages"
 ### Task 36: not-found and error pages
 
 **Files:**
+
 - Create: `app/not-found.tsx`, `app/error.tsx`
 
 - [ ] **Step 1: `app/not-found.tsx`**
@@ -3461,11 +3576,14 @@ import Link from "next/link";
 
 export default function NotFound() {
   return (
-    <main className="min-h-screen grid place-items-center p-8">
+    <main className="grid min-h-screen place-items-center p-8">
       <div className="space-y-3 text-center">
         <h1 className="text-2xl font-bold">No se encontró lo que buscabas</h1>
         <p className="text-text-muted">La tarea o dominio no existe o fue renombrado.</p>
-        <Link href="/" className="inline-block rounded bg-accent px-4 py-2 text-sm font-medium text-accent-fg">
+        <Link
+          href="/"
+          className="inline-block rounded bg-accent px-4 py-2 text-sm font-medium text-accent-fg"
+        >
           Volver al dashboard
         </Link>
       </div>
@@ -3486,11 +3604,14 @@ export default function GlobalError({ error, reset }: { error: Error; reset: () 
   }, [error]);
 
   return (
-    <main className="min-h-screen grid place-items-center p-8">
+    <main className="grid min-h-screen place-items-center p-8">
       <div className="space-y-3 text-center">
         <h1 className="text-2xl font-bold">Algo salió mal</h1>
         <p className="text-text-muted">{error.message}</p>
-        <button onClick={reset} className="rounded bg-accent px-4 py-2 text-sm font-medium text-accent-fg">
+        <button
+          onClick={reset}
+          className="rounded bg-accent px-4 py-2 text-sm font-medium text-accent-fg"
+        >
           Reintentar
         </button>
       </div>
@@ -3513,6 +3634,7 @@ git commit -m "feat: 404 and error pages"
 ### Task 37: Shared ingest helpers
 
 **Files:**
+
 - Create: `scripts/ingest/_lib.ts`
 
 - [ ] **Step 1: Create**
@@ -3566,6 +3688,7 @@ git commit -m "feat: shared helpers for ingest scripts"
 ### Task 38: HashiCorp index scraper
 
 **Files:**
+
 - Create: `scripts/ingest/hashicorp-index.ts`
 
 - [ ] **Step 1: Create**
@@ -3616,7 +3739,8 @@ function parseObjectives(html: string): ObjectiveIndex[] {
   // selectors here.
   const objectives: ObjectiveIndex[] = [];
 
-  const objectiveRe = /<h3[^>]*>\s*(?:<a[^>]*>)?\s*([0-9]+)\.\s*([^<]+)<\/a?[^>]*>[\s\S]*?<ul[^>]*>([\s\S]*?)<\/ul>/g;
+  const objectiveRe =
+    /<h3[^>]*>\s*(?:<a[^>]*>)?\s*([0-9]+)\.\s*([^<]+)<\/a?[^>]*>[\s\S]*?<ul[^>]*>([\s\S]*?)<\/ul>/g;
   let m: RegExpExecArray | null;
   while ((m = objectiveRe.exec(html)) !== null) {
     const [, id, rawTitle, listHtml] = m;
@@ -3676,6 +3800,7 @@ main().catch((err) => {
 - [ ] **Step 2: Add npm script**
 
 In `package.json` under `scripts`:
+
 ```json
 "ingest:index": "tsx scripts/ingest/hashicorp-index.ts",
 ```
@@ -3685,6 +3810,7 @@ In `package.json` under `scripts`:
 ```bash
 npm run ingest:index
 ```
+
 Expected: `content/_index/objectives.json` populated with ≥1 objective (the script throws if 0). If the regex doesn't match anything, update `parseObjectives()` to match the current HashiCorp markup. Inspect a few entries manually.
 
 - [ ] **Step 4: Commit**
@@ -3699,6 +3825,7 @@ git commit -m "feat: HashiCorp associate-study-003 index scraper"
 ### Task 39: ismet55555 notes ingester
 
 **Files:**
+
 - Create: `config/ismet-mapping.yaml`
 - Create: `scripts/ingest/ismet-notes.ts`
 - Create: `tests/unit/ismet-mapper.test.ts`
@@ -3851,7 +3978,11 @@ async function main() {
       ...sections,
     ];
     for (const { heading, body } of candidates) {
-      const resolved = resolveMapping(mappings, file, heading === "__file__" ? undefined as unknown as string : heading);
+      const resolved = resolveMapping(
+        mappings,
+        file,
+        heading === "__file__" ? (undefined as unknown as string) : heading,
+      );
       if (!resolved) continue;
       const objSlug = objSlugById.get(resolved.objectiveId);
       if (!objSlug) continue;
@@ -3897,6 +4028,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
 ```bash
 npm test -- ismet-mapper
 ```
+
 Expected: 3 tests PASS.
 
 - [ ] **Step 6: Dry-run the ingest** (will clone but write 0 files until `ismet-mapping.yaml` is populated — that is expected)
@@ -3904,6 +4036,7 @@ Expected: 3 tests PASS.
 ```bash
 npm run ingest:ismet
 ```
+
 Expected: warns that mappings are empty and prints the clone path. Open `node_modules/.ingest-cache/ismet-notes/` and, using the actual filenames present there, populate `config/ismet-mapping.yaml`. Re-run the ingest.
 
 - [ ] **Step 7: Commit**
@@ -3918,11 +4051,12 @@ git commit -m "feat: ismet notes ingester with YAML-driven heading→task mappin
 ### Task 40: btkrausen labs ingester
 
 **Files:**
+
 - Create: `scripts/ingest/labs.ts`
 
 - [ ] **Step 1: Create**
 
-```ts
+````ts
 #!/usr/bin/env tsx
 /**
  * Clones btkrausen/vault-codespaces and emits lab.mdx per task.
@@ -3966,7 +4100,12 @@ function extractBashBlocks(md: string): string[] {
 }
 
 function blocksToBody(blocks: string[], externalUrl: string, title: string): string {
-  const lines: string[] = [`Laboratorio: **${title}**`, "", `→ [Abrir en GitHub Codespaces](${externalUrl})`, ""];
+  const lines: string[] = [
+    `Laboratorio: **${title}**`,
+    "",
+    `→ [Abrir en GitHub Codespaces](${externalUrl})`,
+    "",
+  ];
   for (const block of blocks) {
     lines.push("```bash");
     lines.push(block.trim());
@@ -4036,7 +4175,7 @@ main().catch((err) => {
   console.error(err);
   process.exit(1);
 });
-```
+````
 
 - [ ] **Step 2: Add npm scripts**
 
@@ -4072,6 +4211,7 @@ git commit -m "feat: btkrausen labs ingester with bash-block extraction"
 ### Task 41: Explainer batch generator
 
 **Files:**
+
 - Create: `scripts/seed-explainers.ts`
 
 - [ ] **Step 1: Create**
@@ -4219,6 +4359,7 @@ main().catch((err) => {
 ```bash
 npm run seed:explainers -- --task 3/kv-v2
 ```
+
 Expected: writes `content/domains/3-secrets/kv-v2/explained.mdx` with real Claude output. Inspect it.
 
 - [ ] **Step 4: Commit**
@@ -4233,6 +4374,7 @@ git commit -m "feat: batch explainer generator using Anthropic API"
 ### Task 42: Content validator
 
 **Files:**
+
 - Create: `scripts/validate-content.ts`
 
 - [ ] **Step 1: Create**
@@ -4325,6 +4467,7 @@ git commit -m "feat: content validator enforcing explainer presence and frontmat
 ### Task 43: Dockerfile
 
 **Files:**
+
 - Create: `Dockerfile`, `.dockerignore`
 
 - [ ] **Step 1: `Dockerfile`**
@@ -4392,6 +4535,7 @@ coverage
 - [ ] **Step 3: Modify `next.config.mjs` to emit standalone output**
 
 Open `next.config.mjs` and add:
+
 ```js
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -4417,6 +4561,7 @@ git commit -m "feat: multi-stage Dockerfile with standalone Next output"
 ### Task 44: docker-compose.yml
 
 **Files:**
+
 - Create: `docker-compose.yml`
 
 - [ ] **Step 1: Create**
@@ -4452,6 +4597,7 @@ services:
 docker compose build
 docker compose up -d
 ```
+
 Expected: container starts. Wait ~15s.
 
 - [ ] **Step 3: Verify**
@@ -4459,6 +4605,7 @@ Expected: container starts. Wait ~15s.
 ```bash
 curl -sS http://localhost:3000/api/health
 ```
+
 Expected: `{"status":"ok","checks":{"db":true,"content":true}}` (assuming `./content/` has real data; otherwise `content:false`).
 
 - [ ] **Step 4: Tear down**
@@ -4481,6 +4628,7 @@ git commit -m "feat: docker-compose with single service and bind-mount volumes"
 ### Task 45: Playwright configuration
 
 **Files:**
+
 - Create: `playwright.config.ts`
 
 - [ ] **Step 1: Install browsers**
@@ -4523,6 +4671,7 @@ git commit -m "chore: Playwright config with auto-spawned dev server"
 ### Task 46: E2E smoke tests
 
 **Files:**
+
 - Create: `tests/e2e/landing.spec.ts`, `tests/e2e/task-reading.spec.ts`, `tests/e2e/progress-tracking.spec.ts`, `tests/e2e/notes.spec.ts`, `tests/e2e/keyboard-shortcuts.spec.ts`
 
 - [ ] **Step 1: `tests/e2e/landing.spec.ts`**
@@ -4600,6 +4749,7 @@ Ensure `./content/` contains the fixture data (copy from `tests/fixtures/sample-
 ```bash
 npm run test:e2e
 ```
+
 Expected: all 5 specs PASS.
 
 - [ ] **Step 7: Commit**
@@ -4616,6 +4766,7 @@ git commit -m "test: e2e smoke tests for dashboard, tabs, progress, notes, keybo
 ### Task 47: README with bootstrap instructions
 
 **Files:**
+
 - Create: `README.md`
 
 - [ ] **Step 1: Create**
@@ -4717,6 +4868,7 @@ git commit -m "docs: README with bootstrap, day-to-day, and refresh flows"
 ```bash
 npm run lint
 ```
+
 Expected: no errors.
 
 - [ ] **Step 2: Unit + integration tests**
@@ -4724,6 +4876,7 @@ Expected: no errors.
 ```bash
 npm test
 ```
+
 Expected: all tests PASS.
 
 - [ ] **Step 3: Content validator**
@@ -4731,6 +4884,7 @@ Expected: all tests PASS.
 ```bash
 npm run content:validate
 ```
+
 Expected: `✓ content valid`.
 
 - [ ] **Step 4: Docker end-to-end**
@@ -4742,6 +4896,7 @@ docker compose up -d
 sleep 15
 curl -sS http://localhost:3000/api/health
 ```
+
 Expected: status ok with both checks true.
 
 - [ ] **Step 5: E2E against the docker container**
@@ -4788,16 +4943,19 @@ git add -A && git commit -m "chore: final smoke-test fixes"
 - §9 Testing & quality → Tasks 11/13/15/16/17 (unit + seed integration), Task 22 (API integration), Tasks 45/46 (E2E), Task 42 (content linter). No CI — plan honors this.
 
 **Deferred from plan (plan-time decisions noted in spec §10):**
+
 - `/` command palette keyboard shortcut — not implemented in any task. Acceptable for v1; the spec lists it under §6.4 but doesn't make it a hard requirement.
 - Light mode — deferred per spec §10.
 - Below-768px mobile layout — deferred per spec §10.
 
 **Known caveats to surface during execution:**
+
 - Task 38 regex is heuristic; if HashiCorp restructures the page, the parser in `hashicorp-index.ts` must be updated manually. The script throws when it finds 0 objectives — this is intentional so the failure is loud.
 - Tasks 39 and 40 require the author to populate `config/*-mapping.yaml` after the first clone. This is called out in each task and documented in the README.
 - Task 41 defaults to `claude-opus-4-6`. A cheaper run can set `MODEL = "claude-sonnet-4-6"` in the script.
 
 **Type consistency (spot-checked):**
+
 - `Status` enum is imported from `@prisma/client` everywhere (Tasks 23, 32, 34, 36 - no hand-rolled string unions).
 - `LoadedMdx` / `LoadedTask` types are defined in Task 13 and reused in Tasks 14, 31.
 - `SidebarObjective` is defined in Task 25 and reused in Task 29's `lib/dashboard.ts`.

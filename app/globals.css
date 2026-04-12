@@ -30,7 +30,9 @@
     font-size: 0.875rem;
     line-height: 1.65;
   }
-  code, pre, kbd {
+  code,
+  pre,
+  kbd {
     font-family: "IBM Plex Mono", ui-monospace, monospace;
   }
   :focus-visible {
@@ -38,7 +40,9 @@
     outline-offset: 2px;
   }
   @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after {
+    *,
+    *::before,
+    *::after {
       animation-duration: 0.01ms !important;
       transition-duration: 0.01ms !important;
     }

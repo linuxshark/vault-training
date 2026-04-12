@@ -11,6 +11,7 @@
 Build a **local-first, single-user web interface** to study for the HashiCorp Vault Associate (003) exam, consolidating content from four sources into an ordered, trackable study path with persistent progress and personal notes.
 
 **In scope (v1):**
+
 - Ordered navigation of all 9 official exam objectives and their sub-tasks.
 - Per-task reading experience with three content tabs: "Explicación sencilla" (for-dummies summary), "Notas técnicas" (condensed notes), "Lab" (copyable commands + external link).
 - Persistent progress state per task (four states) and personal Markdown notes.
@@ -18,6 +19,7 @@ Build a **local-first, single-user web interface** to study for the HashiCorp Va
 - Single-command local deployment (`docker compose up -d`).
 
 **Out of scope (v1 — may be v2+):**
+
 - Embedded/local Vault labs (user runs labs in the upstream `btkrausen/vault-codespaces`).
 - Quizzes, flashcards, or spaced-repetition.
 - Multi-user auth, multi-device sync, cloud hosting.
@@ -26,13 +28,13 @@ Build a **local-first, single-user web interface** to study for the HashiCorp Va
 
 ## 2. Content sources
 
-| Source | Role | License | Access |
-|---|---|---|---|
-| `developer.hashicorp.com/vault/tutorials/associate-cert-003/associate-study-003` | Authoritative taxonomy (9 objectives + sub-tasks + official URLs) | HashiCorp ToS — **link only, do not copy body** | Scraped for structure at ingest time |
-| `developer.hashicorp.com/vault/tutorials/associate-cert-003/associate-review-003` | Cross-reference for review section | Same as above | Referenced via external link |
-| `github.com/ismet55555/Hashicorp-Certified-Vault-Associate-Notes` | Condensed technical notes per topic | MIT | Shallow-cloned, parsed, attributed |
-| `github.com/btkrausen/vault-codespaces` | Lab commands and exercises | Apache 2.0 | Shallow-cloned, parsed, attributed, deep-linked |
-| Claude-generated summaries | "For-dummies" explainers with analogies | Original, project-local | Batch-generated once via Anthropic API and committed |
+| Source                                                                            | Role                                                              | License                                         | Access                                               |
+| --------------------------------------------------------------------------------- | ----------------------------------------------------------------- | ----------------------------------------------- | ---------------------------------------------------- |
+| `developer.hashicorp.com/vault/tutorials/associate-cert-003/associate-study-003`  | Authoritative taxonomy (9 objectives + sub-tasks + official URLs) | HashiCorp ToS — **link only, do not copy body** | Scraped for structure at ingest time                 |
+| `developer.hashicorp.com/vault/tutorials/associate-cert-003/associate-review-003` | Cross-reference for review section                                | Same as above                                   | Referenced via external link                         |
+| `github.com/ismet55555/Hashicorp-Certified-Vault-Associate-Notes`                 | Condensed technical notes per topic                               | MIT                                             | Shallow-cloned, parsed, attributed                   |
+| `github.com/btkrausen/vault-codespaces`                                           | Lab commands and exercises                                        | Apache 2.0                                      | Shallow-cloned, parsed, attributed, deep-linked      |
+| Claude-generated summaries                                                        | "For-dummies" explainers with analogies                           | Original, project-local                         | Batch-generated once via Anthropic API and committed |
 
 ## 3. Architecture
 
@@ -99,15 +101,15 @@ Every `.mdx` file under `content/domains/` ships with this frontmatter, validate
 
 ```yaml
 ---
-objectiveId: "3"              # FK to Objective
-taskSlug: "kv-v2"             # unique within a domain
-kind: "explained"             # "explained" | "notes" | "lab"
+objectiveId: "3" # FK to Objective
+taskSlug: "kv-v2" # unique within a domain
+kind: "explained" # "explained" | "notes" | "lab"
 title: "KV v2: versiones y soft-delete"
-source: "claude"              # "claude" | "ismet55555" | "btkrausen"
-sourceUrl: "https://..."      # attribution URL
-license: "MIT"                # license string
-order: 2                      # sort order inside the task
-estMinutes: 12                # optional reading estimate
+source: "claude" # "claude" | "ismet55555" | "btkrausen"
+sourceUrl: "https://..." # attribution URL
+license: "MIT" # license string
+order: 2 # sort order inside the task
+estMinutes: 12 # optional reading estimate
 ---
 ```
 
@@ -186,13 +188,13 @@ If a `Task` row exists in the database but its corresponding content directory i
 
 Each script is idempotent and re-runnable.
 
-| Script | Input | Output |
-|---|---|---|
-| `npm run ingest:index` | `associate-study-003` HTML | `content/_index/objectives.json` |
-| `npm run ingest:ismet` | `github.com/ismet55555/...` + `config/ismet-mapping.yaml` | `content/domains/<n>/<task>/notes.mdx` (with license/source frontmatter) |
-| `npm run ingest:labs` | `github.com/btkrausen/vault-codespaces` | `content/domains/<n>/<task>/lab.mdx` (title + external link + `<CopyCmd>` blocks) |
-| `npm run ingest:all` | — | Runs the three above in order |
-| `npm run seed:explainers` | Objective+Task catalog + Anthropic API | `content/domains/<n>/<task>/explained.mdx` (batch, committed to repo) |
+| Script                    | Input                                                     | Output                                                                            |
+| ------------------------- | --------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| `npm run ingest:index`    | `associate-study-003` HTML                                | `content/_index/objectives.json`                                                  |
+| `npm run ingest:ismet`    | `github.com/ismet55555/...` + `config/ismet-mapping.yaml` | `content/domains/<n>/<task>/notes.mdx` (with license/source frontmatter)          |
+| `npm run ingest:labs`     | `github.com/btkrausen/vault-codespaces`                   | `content/domains/<n>/<task>/lab.mdx` (title + external link + `<CopyCmd>` blocks) |
+| `npm run ingest:all`      | —                                                         | Runs the three above in order                                                     |
+| `npm run seed:explainers` | Objective+Task catalog + Anthropic API                    | `content/domains/<n>/<task>/explained.mdx` (batch, committed to repo)             |
 
 **Explainer generation:** The `seed:explainers` script iterates every `(objective, task)` pair, prompts Claude with the objective title, official URL, and a distilled instruction ("explica como para alguien que no sabe nada de Vault; usa una analogía cotidiana antes del término técnico"), validates the output against the MDX frontmatter schema, and writes the file. `--force` flag regenerates existing files. Default behaviour: skip if the file exists.
 
@@ -204,13 +206,13 @@ Each script is idempotent and re-runnable.
 
 ### 6.1 Routes
 
-| Route | Component | Purpose |
-|---|---|---|
-| `/` | `DashboardPage` | 9 objective cards: % completion, time invested, "resume where you left off" |
-| `/domains/[objectiveSlug]` | `ObjectiveView` | Domain overview + task list with states |
-| `/domains/[objectiveSlug]/[taskSlug]` | `TaskView` | Primary study screen — 3-column layout with tabbed content |
-| `/review` | `ReviewView` | Filterable list for pre-exam review (e.g., status=READING, unvisited > 3 days) |
-| `/notes` | `NotesIndex` | Searchable index of all personal notes, grouped by domain |
+| Route                                 | Component       | Purpose                                                                        |
+| ------------------------------------- | --------------- | ------------------------------------------------------------------------------ |
+| `/`                                   | `DashboardPage` | 9 objective cards: % completion, time invested, "resume where you left off"    |
+| `/domains/[objectiveSlug]`            | `ObjectiveView` | Domain overview + task list with states                                        |
+| `/domains/[objectiveSlug]/[taskSlug]` | `TaskView`      | Primary study screen — 3-column layout with tabbed content                     |
+| `/review`                             | `ReviewView`    | Filterable list for pre-exam review (e.g., status=READING, unvisited > 3 days) |
+| `/notes`                              | `NotesIndex`    | Searchable index of all personal notes, grouped by domain                      |
 
 ### 6.2 Layout
 
@@ -235,23 +237,23 @@ Below 1024px the sidebar collapses to a drawer and the right panel moves to tabs
 
 ### 6.4 Keyboard shortcuts
 
-| Key | Action |
-|---|---|
-| `j` / `k` | Next / previous task |
+| Key             | Action                                  |
+| --------------- | --------------------------------------- |
+| `j` / `k`       | Next / previous task                    |
 | `1` / `2` / `3` | Switch to Explicación / Notas / Lab tab |
-| `n` | Focus the note editor |
-| `m` | Mark current task as REVIEWED |
-| `/` | Global command palette (cmd-k) |
+| `n`             | Focus the note editor                   |
+| `m`             | Mark current task as REVIEWED           |
+| `/`             | Global command palette (cmd-k)          |
 
 ### 6.5 States
 
-| State | Behaviour |
-|---|---|
-| Loading | Skeleton in sidebar and main — no blocking spinners. Initial render target < 200ms (RSC). |
-| Empty note | Placeholder text with examples, no aggressive CTAs. |
-| Progress saved | Top-right toast 3s, `aria-live="polite"`, does not steal focus. |
-| DB error / offline | Global banner "No se pudo guardar. Reintentando…" + manual retry button. |
-| Content not found | 404 with links to nearby tasks in the same domain. |
+| State              | Behaviour                                                                                 |
+| ------------------ | ----------------------------------------------------------------------------------------- |
+| Loading            | Skeleton in sidebar and main — no blocking spinners. Initial render target < 200ms (RSC). |
+| Empty note         | Placeholder text with examples, no aggressive CTAs.                                       |
+| Progress saved     | Top-right toast 3s, `aria-live="polite"`, does not steal focus.                           |
+| DB error / offline | Global banner "No se pudo guardar. Reintentando…" + manual retry button.                  |
+| Content not found  | 404 with links to nearby tasks in the same domain.                                        |
 
 ### 6.6 Accessibility
 
@@ -270,23 +272,24 @@ Minimalist documentation aesthetic. Dark mode default (reading-heavy product), l
 
 ### 7.2 Color tokens (semantic)
 
-| Token | Value | Use |
-|---|---|---|
-| `--bg` | `#0d1117` | Main background |
-| `--surface` | `#161b22` | Sidebar, right panel |
-| `--surface-2` | `#1c2128` | Hover, nested cards |
-| `--border` | `#30363d` | Primary borders |
-| `--border-subtle` | `#21262d` | Internal separators |
-| `--text` | `#e6edf3` | Body text |
-| `--text-muted` | `#8b949e` | Secondary text |
-| `--text-dim` | `#6e7681` | Labels, placeholders |
-| `--accent` | `#ffec6e` | Vault amber — active task, primary CTA |
-| `--blue` | `#58a6ff` | Links, "reading" status |
-| `--green` | `#3fb950` | "mastered" status, success |
-| `--amber` | `#d29922` | "reviewed" status, warning |
-| `--red` | `#f85149` | Error, destructive |
+| Token             | Value     | Use                                    |
+| ----------------- | --------- | -------------------------------------- |
+| `--bg`            | `#0d1117` | Main background                        |
+| `--surface`       | `#161b22` | Sidebar, right panel                   |
+| `--surface-2`     | `#1c2128` | Hover, nested cards                    |
+| `--border`        | `#30363d` | Primary borders                        |
+| `--border-subtle` | `#21262d` | Internal separators                    |
+| `--text`          | `#e6edf3` | Body text                              |
+| `--text-muted`    | `#8b949e` | Secondary text                         |
+| `--text-dim`      | `#6e7681` | Labels, placeholders                   |
+| `--accent`        | `#ffec6e` | Vault amber — active task, primary CTA |
+| `--blue`          | `#58a6ff` | Links, "reading" status                |
+| `--green`         | `#3fb950` | "mastered" status, success             |
+| `--amber`         | `#d29922` | "reviewed" status, warning             |
+| `--red`           | `#f85149` | Error, destructive                     |
 
 Contrast ratios (validated):
+
 - `text` on `bg`: 13.7:1 (AAA)
 - `text-muted` on `bg`: 7.2:1 (AAA)
 - `accent` on `bg`: 13.4:1 (AAA)
@@ -310,12 +313,12 @@ Contrast ratios (validated):
 
 Four visual states, distinguishable by both color and dot+label (never color alone):
 
-| Status | Color | Label |
-|---|---|---|
+| Status        | Color        | Label         |
+| ------------- | ------------ | ------------- |
 | `NOT_STARTED` | neutral gray | "No empezado" |
-| `READING` | blue | "Leyendo" |
-| `REVIEWED` | amber | "Revisado" |
-| `MASTERED` | green | "Dominado" |
+| `READING`     | blue         | "Leyendo"     |
+| `REVIEWED`    | amber        | "Revisado"    |
+| `MASTERED`    | green        | "Dominado"    |
 
 ## 8. Deployment
 
@@ -351,9 +354,10 @@ Three stages: `deps` (production npm install), `builder` (Prisma generate + Next
 ### 8.3 `/api/health`
 
 Returns 200 when:
+
 - SQLite file is readable/writable.
 - `content/_index/objectives.json` is present and parses.
-Returns 503 otherwise, with a small JSON body naming which check failed.
+  Returns 503 otherwise, with a small JSON body naming which check failed.
 
 ### 8.4 Bootstrap flow (executed once on host)
 
@@ -415,6 +419,7 @@ Use `npm run seed:explainers -- --force` to regenerate every explainer (e.g., af
 ### 9.4 Content linter (`npm run content:validate`)
 
 Required before every `docker compose up -d`. Fails fast if:
+
 - A task is missing an `explained.mdx` file.
 - Any frontmatter fails Zod validation.
 - `sourceUrl` is empty for non-Claude sources.
