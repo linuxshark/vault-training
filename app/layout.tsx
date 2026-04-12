@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { inter, plexMono } from "./fonts";
 
 export const metadata: Metadata = {
   title: "Vault Training",
@@ -8,8 +9,8 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es" className="dark">
-      <body>
+    <html lang="es" className={`dark ${inter.variable} ${plexMono.variable}`}>
+      <body className="font-sans">
         <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:bg-accent focus:text-accent-fg focus:px-3 focus:py-2 focus:rounded">
           Saltar al contenido
         </a>

@@ -26,8 +26,8 @@ const config: Config = {
         red: "hsl(var(--red) / <alpha-value>)",
       },
       fontFamily: {
-        sans: ["Inter", "system-ui", "sans-serif"],
-        mono: ["IBM Plex Mono", "ui-monospace", "monospace"],
+        sans: ["var(--font-inter)", "system-ui", "sans-serif"],
+        mono: ["var(--font-plex-mono)", "ui-monospace", "monospace"],
       },
       fontSize: {
         xs: ["0.75rem", { lineHeight: "1.1rem" }],
