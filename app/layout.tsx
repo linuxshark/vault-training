@@ -1,13 +1,15 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { inter, plexMono } from "./fonts";
+import { ensureSeed } from "@/lib/ensure-seed";
 
 export const metadata: Metadata = {
   title: "Vault Training",
   description: "HashiCorp Vault Associate (003) study interface",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  await ensureSeed();
   return (
     <html lang="es" className={`dark ${inter.variable} ${plexMono.variable}`}>
       <body className="font-sans">
