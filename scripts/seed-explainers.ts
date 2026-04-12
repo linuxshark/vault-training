@@ -1,5 +1,8 @@
 #!/usr/bin/env tsx
-import "dotenv/config";
+import dotenv from "dotenv";
+import path from "node:path";
+
+dotenv.config({ path: path.resolve(process.cwd(), ".env.local") });
 
 /**
  * Generates content/domains/<obj>/<task>/explained.mdx for every (objective, task)
@@ -12,7 +15,6 @@ import "dotenv/config";
  * Requires ANTHROPIC_API_KEY in the environment.
  */
 import fs from "node:fs/promises";
-import path from "node:path";
 import Anthropic from "@anthropic-ai/sdk";
 import { CONTENT_ROOT, ensureDir, taskDir, writeMdx } from "./ingest/_lib";
 
