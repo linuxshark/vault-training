@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { inter, plexMono } from "./fonts";
 import { ensureSeed } from "@/lib/ensure-seed";
+import { KeyboardShortcuts } from "@/components/keyboard-shortcuts";
 
 export const metadata: Metadata = {
   title: "Vault Training",
@@ -19,6 +20,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         >
           Saltar al contenido
         </a>
+        <KeyboardShortcuts />
         {children}
       </body>
     </html>
