@@ -1,0 +1,17 @@
+# Maps files/headings from ismet55555/Hashicorp-Certified-Vault-Associate-Notes
+# to (objectiveId, taskSlug) pairs. Update after the first run by inspecting
+# the cloned folder at node_modules/.ingest-cache/ismet-notes/.
+#
+# Format:
+#   - file: <glob relative to repo root>
+#     heading: <optional H2/H3 match, trimmed>
+#     objectiveId: "<n>"
+#     taskSlug: "<slug>"
+#
+# Example:
+#   - file: "03_secrets_engines.md"
+#     heading: "KV v2"
+#     objectiveId: "3"
+#     taskSlug: "kv-v2"
+
+mappings: []
