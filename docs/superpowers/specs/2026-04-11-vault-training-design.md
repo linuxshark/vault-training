@@ -128,6 +128,7 @@ model Task {
   title       String
   objectiveId String
   orderIndex  Int
+  hidden      Boolean  @default(false)     // true if content removed from disk
   objective   Objective @relation(fields: [objectiveId], references: [id])
   progress    TaskProgress?
   note        TaskNote?
@@ -171,6 +172,8 @@ model StudySession {
 ### 4.4 Seed and catalog regeneration
 
 At application start, `lib/seed.ts` walks `content/_index/objectives.json` and `content/domains/**/` and upserts `Objective` + `Task` rows. `TaskProgress` and `TaskNote` are never touched by the seed, so re-seeding is safe for user data.
+
+If a `Task` row exists in the database but its corresponding content directory is no longer present on disk (e.g., a task was renamed upstream), the seed flags the row with `hidden = true` instead of deleting it. Hidden rows are excluded from navigation but preserve any attached progress and notes for later recovery. A CLI flag `--prune` on the seed script removes hidden rows permanently.
 
 ### 4.5 Library contracts
 
@@ -377,10 +380,12 @@ docker compose down                   # optional when done
 
 ```bash
 npm run ingest:all
-npm run seed:explainers -- --diff     # regenerate only for new tasks
+npm run seed:explainers               # default: skip tasks that already have explained.mdx
 npm run content:validate
 git commit -am "content: refresh <date>"
 ```
+
+Use `npm run seed:explainers -- --force` to regenerate every explainer (e.g., after a prompt template change), or `-- --task <objective>/<slug>` to regenerate a single task.
 
 ## 9. Quality & testing
 
