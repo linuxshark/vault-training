@@ -13,7 +13,10 @@ WORKDIR /app
 ENV NEXT_TELEMETRY_DISABLED=1
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-RUN npx prisma generate && npm run build
+RUN mkdir -p /app/data /app/content/_index && \
+    npx prisma generate && \
+    DATABASE_URL="file:/app/data/build.db" npm run build && \
+    rm -f /app/data/build.db
 
 # --- runner ---
 FROM node:${NODE_VERSION}-alpine AS runner
