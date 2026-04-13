@@ -1,46 +1,41 @@
 # Maps files/headings from ismet55555/Hashicorp-Certified-Vault-Associate-Notes
-# to (objectiveId, taskSlug) pairs. Update after the first run by inspecting
-# the cloned folder at node_modules/.ingest-cache/ismet-notes/.
+# to (objectiveId, taskSlug) pairs.
+#
+# taskSlug MUST match a slug that exists in content/_index/objectives.json
 #
 # Format:
-#   - file: <glob relative to repo root>
-#     heading: <optional H2/H3 match, trimmed>
-#     objectiveId: "<n>"
+#   - file: <filename in the cloned repo>
+#     heading: <optional H2 match, trimmed>
+#     objectiveId: "<id>"
 #     taskSlug: "<slug>"
-#
-# Example:
-#   - file: "03_secrets_engines.md"
-#     heading: "KV v2"
-#     objectiveId: "3"
-#     taskSlug: "kv-v2"
 
 mappings:
   - file: "README.md"
     heading: "Authentication Methods"
     objectiveId: "1a"
-    taskSlug: "authentication-methods-notes"
+    taskSlug: "vault-cli-to-configure-auth-methods"
 
   - file: "README.md"
     heading: "Vault Policies"
     objectiveId: "2a"
-    taskSlug: "vault-policies-notes"
+    taskSlug: "vault-policies-tutorial"
 
   - file: "README.md"
     heading: "Tokens"
     objectiveId: "3a"
-    taskSlug: "tokens-notes"
+    taskSlug: "tokens-tutorial"
 
   - file: "README.md"
     heading: "Secrets Engines"
     objectiveId: "4a"
-    taskSlug: "secrets-engines-notes"
+    taskSlug: "secrets-management"
 
   - file: "README.md"
     heading: "Vault Agent"
     objectiveId: "7a"
-    taskSlug: "vault-agent-notes"
+    taskSlug: "the-challenge-that-vault-agent-solves"
 
   - file: "README.md"
     heading: "Vault Architecture"
     objectiveId: "7a"
-    taskSlug: "vault-architecture-notes"
+    taskSlug: "vault-reference-architecture-guide"
