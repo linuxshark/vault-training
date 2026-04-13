@@ -41,8 +41,10 @@ COPY --from=builder --chown=app:app /app/node_modules/better-sqlite3 ./node_modu
 COPY --from=builder --chown=app:app /app/node_modules/@prisma/adapter-better-sqlite3 ./node_modules/@prisma/adapter-better-sqlite3
 COPY --from=builder --chown=app:app /app/node_modules/.bin/tsx ./node_modules/.bin/tsx
 COPY --from=builder --chown=app:app /app/node_modules/tsx ./node_modules/tsx
+COPY --from=builder --chown=app:app /app/node_modules/prisma ./node_modules/prisma
+COPY --from=builder --chown=app:app /app/node_modules/.bin/prisma ./node_modules/.bin/prisma
 
 USER app
 EXPOSE 3000
 
-CMD ["sh", "-c", "npx prisma db push && node server.js"]
+CMD ["sh", "-c", "./node_modules/.bin/prisma db push && node server.js"]
