@@ -1,0 +1,44 @@
+---
+objectiveId: "4a"
+taskSlug: "cubbyhole-response-wrapping"
+kind: "lab"
+title: "Response Wrapping Lab"
+source: "btkrausen"
+sourceUrl: "https://github.com/btkrausen/vault-codespaces/blob/main/labs/lab_response_wrapping.md"
+license: "Apache-2.0"
+order: 3
+---
+
+Laboratorio: **Response Wrapping Lab**
+
+→ [Abrir en GitHub Codespaces](https://github.com/btkrausen/vault-codespaces/blob/main/labs/lab_response_wrapping.md)
+
+```bash
+# Log in with a valid token
+vault login root
+
+# Create the secret
+vault kv put secret/demo username=admin password=secret123
+```
+
+```bash
+vault kv get secret/demo
+```
+
+```bash
+vault kv get -wrap-ttl=1h -format=json secret/demo
+# Save the wrapping_token from output
+```
+
+```bash
+vault unwrap <wrapping_token>
+```
+
+```bash
+vault unwrap <wrapping_token>
+```
+
+```bash
+vault kv delete secret/credentials
+vault kv delete secret/short-lived
+```

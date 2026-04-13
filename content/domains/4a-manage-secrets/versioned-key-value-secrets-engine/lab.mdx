@@ -1,0 +1,129 @@
+---
+objectiveId: "4a"
+taskSlug: "versioned-key-value-secrets-engine"
+kind: "lab"
+title: "KV Secrets Engine Lab"
+source: "btkrausen"
+sourceUrl: "https://github.com/btkrausen/vault-codespaces/blob/main/labs/lab_kv_secrets_engine.md"
+license: "Apache-2.0"
+order: 3
+---
+
+Laboratorio: **KV Secrets Engine Lab**
+
+→ [Abrir en GitHub Codespaces](https://github.com/btkrausen/vault-codespaces/blob/main/labs/lab_kv_secrets_engine.md)
+
+```bash
+# Log in with a valid token
+vault login root
+
+# Enable the secrets engines
+vault secrets enable -path=kv1 -version=1 kv
+vault secrets enable -path=kv2 -version=2 kv
+```
+
+```bash
+vault secrets list
+```
+
+```bash
+# Write a secret
+vault kv put kv1/app1 username=admin password=secret123
+
+# Read a secret
+vault kv get kv1/app1
+
+# Update a secret
+vault kv put kv1/app1 username=admin password=newpass123
+
+# Read the updated secret
+vault kv get kv1/app1
+
+# Delete a secret
+vault kv delete kv1/app1
+
+# Read a secret (this should return "no value found")
+vault kv get kv1/app1
+```
+
+```bash
+# Write a secret
+vault kv put kv2/app1 username=admin password=secret123
+
+# Read a secret
+vault kv get kv2/app1
+
+# Update a secret
+vault kv put kv2/app1 username=admin password=newpass123
+
+# Read the updated secret (notice it's now version 2)
+vault kv get kv2/app1
+
+# Delete latest version
+vault kv delete kv2/app1
+
+# Read the updated secret (notice only metadata is returned - but no data)
+vault kv get kv2/app1
+```
+
+```bash
+vault kv put kv2/config api_key=v1
+vault kv put kv2/config api_key=v2
+vault kv put kv2/config api_key=v3
+```
+
+```bash
+vault kv get -version=1 kv2/config
+vault kv get -version=2 kv2/config
+vault kv get -version=3 kv2/config
+```
+
+```bash
+vault kv metadata get kv2/config
+```
+
+```bash
+vault kv rollback -version=1 kv2/config
+```
+
+```bash
+vault kv get kv2/config
+```
+
+```bash
+# Delete latest version
+vault kv delete kv2/app1
+
+# Read the latest version(notice only metadata is returned)
+vault kv get kv2/app1
+
+# Undelete the version
+vault kv undelete -versions=1 kv2/app1
+
+# Read the latest version(notice the data is back)
+vault kv get kv2/app1
+
+# Permanently delete version
+vault kv destroy -versions=1 kv2/app1
+```
+
+```bash
+vault kv metadata put -custom-metadata=owner="ops" -custom-metadata=env="prod" kv2/app1
+```
+
+```bash
+vault kv get kv2/app1
+```
+
+```bash
+vault kv metadata put -max-versions=5 kv2/app1
+```
+
+```bash
+vault kv metadata delete kv2/app1
+```
+
+```bash
+vault secrets disable kv1
+vault secrets disable kv2
+```

@@ -1,0 +1,53 @@
+---
+objectiveId: "6a"
+taskSlug: "encryption-as-a-service-transit-secrets-engine"
+kind: "explained"
+title: "Encryption as a Service: Transit Secrets Engine"
+source: "claude"
+sourceUrl: "https://developer.hashicorp.com/vault/tutorials/encryption-as-a-service/eaas-transit"
+license: "original"
+order: 1
+estMinutes: 10
+---
+
+<Analogy>
+Imagina que tienes un cofre de seguridad en casa. En lugar de guardar tus documentos valiosos dentro, lo que haces es llevarlos a un banco especializado. El banco los cifra (los transforma en un código secreto) y te devuelve el papel codificado. Cuando los necesitas de nuevo, el banco descodifica. Tú nunca ves las llaves del banco. Eso es el Transit Secrets Engine: un servicio que cifra y descodifica tus datos sin que tú tengas que gestionar las claves de cifrado.
+</Analogy>
+
+## ¿Qué es el Transit Secrets Engine?
+
+El Transit Secrets Engine es una característica de Vault que actúa como servicio de cifrado externo. Tu aplicación no necesita conocer ni guardar claves criptográficas. En lugar de eso, envía datos a Vault, que se encarga de cifrarlos o descodificarlos.
+
+## Cómo funciona en la práctica
+
+Primero, habilitas el motor Transit en Vault:
+
+<CopyCmd cmd="vault secrets enable transit" />
+
+Luego, creas una clave de cifrado con un nombre descriptivo:
+
+<CopyCmd cmd="vault write -f transit/keys/mi-app-key" />
+
+Esa clave vive dentro de Vault y nunca sale de allí. Ahora tu aplicación puede enviar datos al servicio de Vault para cifrar:
+
+<CopyCmd cmd="vault write transit/encrypt/mi-app-key plaintext=$(base64 <<< 'mi-secreto')" />
+
+Vault devuelve el texto cifrado. Tu base de datos puede almacenarlo tranquilamente; aunque alguien acceda a ella, los datos están codificados.
+
+Cuando necesitas el original, pides a Vault que descodifique:
+
+<CopyCmd cmd="vault write transit/decrypt/mi-app-key ciphertext='vault:v1:...'" />
+
+## Ventajas principales
+
+La clave (literal y figurativamente) está en que **tu aplicación nunca maneja directamente las claves criptográficas**. Vault es el guardián exclusivo. Además, puedes rotar las claves (cambiarlas regularmente) sin alterar los datos ya cifrados. El Transit Engine también ofrece otras operaciones: firmar datos, verificar firmas, generar números aleatorios.
+
+Es ideal para aplicaciones que necesitan proteger información sensible (contraseñas, tarjetas de crédito, tokens) sin complejidad criptográfica interna.
+
+## Puntos clave
+
+- Transit Secrets Engine cifra y descodifica datos; Vault guarda las claves, nunca tu aplicación.
+- Habilita el motor y crea claves con comandos simples; luego usa APIs para cifrar/descodificar.
+- Permite rotación de claves sin romper datos existentes.
+- Ideal para externalizar la gestión criptográfica fuera de tu código.
+- Protege datos en reposo sin requerir que la aplicación sea experta en criptografía.

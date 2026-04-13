@@ -1,0 +1,55 @@
+---
+objectiveId: "3a"
+taskSlug: "characteristics-of-batch-tokens"
+kind: "explained"
+title: "characteristics of batch tokens"
+source: "claude"
+sourceUrl: "https://developer.hashicorp.com/vault/tutorials/tokens/batch-tokens"
+license: "original"
+order: 1
+estMinutes: 10
+---
+
+<Analogy>
+Imagina que en una discoteca hay dos tipos de entradas: las normales que puedes usar siempre durante un mes, y las especiales de una sola noche que te dejan entrar pero no puedes volver a usarlas. Los **batch tokens** son como esas entradas de una sola noche: son rápidas de generar, no se guardan en la base de datos y desaparecen después de usarse.
+</Analogy>
+
+## ¿Qué son los Batch Tokens?
+
+Un **token** en Vault es tu identificación para acceder a secretos. Existen dos tipos principales: service tokens (normales) y batch tokens (especiales). Los batch tokens son versiones ligeras y eficientes diseñadas para operaciones rápidas.
+
+## Características principales
+
+**No se almacenan en la base de datos.** A diferencia de otros tokens, Vault no los guarda en su sistema. Esto los hace más rápidos y menos pesados para el servidor. Es como una nota que desaparece después de leerla.
+
+**Vida útil muy corta.** Son tokens temporales, ideales para trabajos puntuales. Normalmente duran minutos, no horas o días. Una vez usado o expirado, ya no sirve.
+
+**Sin renovación.** No puedes extender su vida útil. Si se vence, terminó. Con otros tokens puedes pedir más tiempo, pero con batch tokens no hay negociación.
+
+**Rendimiento optimizado.** Como Vault no los almacena, procesa solicitudes más rápido. Perfecto cuando necesitas hacer muchas consultas en poco tiempo, como un script automático que baja secretos cada 5 minutos.
+
+**Sin operaciones de revocación compleja.** No puedes hacer ciertas operaciones que sí permiten los service tokens, como listar tokens o cambiar políticas. Son más simples, por eso son más rápidos.
+
+## Cuándo usarlos
+
+Los batch tokens brillan en automatizaciones. Por ejemplo, un script de CI/CD que necesita descargar una clave de API y luego terminar. O una tarea programada que se ejecuta cada hora.
+
+## Cuándo NO usarlos
+
+No los uses si necesitas un acceso duradero o si el token podría necesitar renovarse. Tampoco si requieres auditoría detallada de cada operación (los batch tokens generan menos registros).
+
+## Crear un batch token
+
+Puedes generar un batch token así:
+
+<CopyCmd cmd="vault token create -type batch" />
+
+Vault devuelve el token inmediatamente sin almacenarlo internamente.
+
+## Puntos clave
+
+- Los batch tokens **no se guardan en la base de datos**, solo en memoria
+- **No se pueden renovar**: vencen una sola vez y listo
+- Son ideales para **scripts y automatizaciones rápidas**
+- Ofrecen mejor **rendimiento** que los service tokens normales
+- Perfectos para tareas **puntuales de corta duración**

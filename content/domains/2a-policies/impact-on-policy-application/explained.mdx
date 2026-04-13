@@ -1,0 +1,59 @@
+---
+objectiveId: "2a"
+taskSlug: "impact-on-policy-application"
+kind: "explained"
+title: "impact on policy application"
+source: "claude"
+sourceUrl: "https://developer.hashicorp.com/vault/tutorials/get-started/introduction-policies"
+license: "original"
+order: 1
+estMinutes: 10
+---
+
+<Analogy>
+Imagina que tu casa tiene varias puertas (cocina, dormitorio, baño). Tú tienes las llaves de todas. Pero cuando invitas a un amigo, le das solo la llave del salón. Las políticas en Vault funcionan igual: definen qué "puertas" (recursos y acciones) puede abrir cada usuario o aplicación.
+</Analogy>
+
+## ¿Qué son las políticas en Vault?
+
+Una política es un conjunto de reglas que controla qué puede hacer alguien dentro de Vault. Sin políticas, cualquiera podría acceder a todos los secretos. Con políticas, decides exactamente quién ve qué.
+
+Las políticas se escriben en un formato llamado HCL (HashiCorp Configuration Language). Parecer código, pero es más simple de lo que suena.
+
+## ¿Cómo impactan en la aplicación?
+
+Cuando alguien intenta acceder a un secreto en Vault, el sistema primero verifica: "¿Qué políticas tiene este usuario? ¿Permiten esta acción?" Si la política dice "sí", la acción sucede. Si dice "no", Vault rechaza la solicitud.
+
+Esto sucede en **tiempo real**. Si cambias una política, el cambio toma efecto inmediatamente. Ya no necesitas reiniciar nada.
+
+## Un ejemplo práctico
+
+Supón que tienes un equipo de base de datos y otro de desarrollo. El equipo de BD necesita acceder a credenciales de SQL. Los desarrolladores no.
+
+Creas una política para BD:
+
+<CopyCmd cmd="path \"secret/data/database/*\" {
+  capabilities = [\"read\", \"list\"]
+}" />
+
+Creas otra para desarrollo:
+
+<CopyCmd cmd="path \"secret/data/app/*\" {
+  capabilities = [\"read\", \"list\"]
+}" />
+
+Luego asignas cada política al grupo correcto. Ahora, si un desarrollador intenta leer `secret/data/database/password`, Vault lo bloquea automáticamente.
+
+## Lo importante: alcance y consistencia
+
+Las políticas aplican a **todo acceso**: API, CLI, interfaz web. No hay forma de esquivarlas. Esto garantiza que tu seguridad es consistente en todas partes.
+
+También son **aditivas**: si tienes dos políticas, obtienes los permisos de ambas. No puedes negar explícitamente algo; solo permitir o no permitir.
+
+## Puntos clave
+
+- Las políticas definen quién puede hacer qué en Vault (crear, leer, eliminar secretos).
+- Se aplican **en tiempo real** a cada solicitud, sin necesidad de reiniciar.
+- Usan un lenguaje simple (HCL) basado en rutas y capacidades.
+- Una política rechazada bloquea la acción inmediatamente en toda la aplicación.
+- Los cambios de políticas afectan a todos los usuarios conectados sin demora.

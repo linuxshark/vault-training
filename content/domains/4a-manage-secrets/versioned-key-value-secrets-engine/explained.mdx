@@ -1,0 +1,76 @@
+---
+objectiveId: "4a"
+taskSlug: "versioned-key-value-secrets-engine"
+kind: "explained"
+title: "Versioned Key/Value Secrets Engine"
+source: "claude"
+sourceUrl: "https://developer.hashicorp.com/vault/tutorials/secrets-management/versioned-kv"
+license: "original"
+order: 1
+estMinutes: 10
+---
+
+<Analogy>
+Imagina un armario de llaves de tu casa. Cada llave abre una puerta diferente (tu contraseña de Netflix, la API key del banco, etc.). Con el tiempo cambias las llaves: la vieja contraseña de Netflix ya no sirve, pero guardas un registro de todas las versiones antiguas "por si acaso". El Versioned Key/Value Secrets Engine de Vault es exactamente esto: un lugar seguro para guardar secretos con historial de cambios.
+</Analogy>
+
+## ¿Qué es el Versioned Key/Value?
+
+El KV Secrets Engine es el motor más simple de Vault para almacenar secretos. "Versioned" significa que Vault **guarda un historial automático cada vez que cambias un secreto**.
+
+Por ejemplo: cuando actualizas la contraseña de una base de datos, Vault no borra la antigua. Crea una nueva versión y mantiene las anteriores. Así puedes recuperar una versión antigua si algo falla.
+
+## Cómo funciona en la práctica
+
+Todo secreto en Vault vive en una "ruta" (un camino como en una carpeta). Por ejemplo:
+
+```
+secret/data/database/prod-password
+```
+
+Cuando guardas un secreto por primera vez, es versión 1. Cuando lo cambias, se convierte en versión 2, pero la versión 1 sigue ahí guardada.
+
+## Comandos básicos
+
+Guardar un secreto nuevo:
+
+<CopyCmd cmd="vault kv put secret/database/prod password=mipassword123 user=admin" />
+
+Leerlo:
+
+<CopyCmd cmd="vault kv get secret/database/prod" />
+
+Ver todas las versiones disponibles:
+
+<CopyCmd cmd="vault kv metadata get secret/database/prod" />
+
+Recuperar una versión específica (la número 2):
+
+<CopyCmd cmd="vault kv get -version=2 secret/database/prod" />
+
+## ¿Cuándo lo usas?
+
+Usa el Versioned KV cuando necesites:
+
+- Guardar contraseñas, tokens de API o credenciales simples
+- Tener un registro de auditoría: quién cambió qué y cuándo
+- Poder "volver atrás" rápidamente si un cambio rompe algo
+- Una solución sencilla sin complejidad extra
+
+**Nota importante:** Vault también tiene un KV no versionado (v1), pero la versión 2 (versionada) es la moderna y recomendada.
+
+## El flujo típico
+
+1. Activar el secrets engine KV en Vault
+2. Guardar un secreto con sus datos (usuario, contraseña, etc.)
+3. Una aplicación o persona lo recupera cuando lo necesita
+4. Tiempo después, actualizas el secreto (nueva contraseña)
+5. La versión anterior queda disponible por si necesitas restaurar
+
+## Puntos clave
+
+- **Versioned KV = un armario de llaves digital** con historial completo de cambios
+- **Cada actualización crea una versión nueva**, no borra la anterior
+- Usa comandos `vault kv put` para guardar y `vault kv get` para recuperar
+- Puedes volver a cualquier versión anterior con `-version=número`
+- Ideal para secretos simples: contraseñas, API keys, tokens de bases de datos

@@ -1,0 +1,69 @@
+---
+objectiveId: "1a"
+taskSlug: "vault-ui-to-configure-auth-methods"
+kind: "explained"
+title: "Vault UI to configure auth methods"
+source: "claude"
+sourceUrl: "https://developer.hashicorp.com/vault/tutorials/get-started/learn-ui"
+license: "original"
+order: 1
+estMinutes: 10
+---
+
+<Analogy>
+
+Imagina que tu casa tiene una puerta principal. Esa puerta es tu acceso, pero tienes muchas formas de entrar: con llave, huella dactilar, código numérico o reconocimiento facial. Cada forma es diferente, pero todas prueban que eres el dueño.
+
+Vault funciona igual: la puerta principal es el sistema de secretos, pero hay múltiples maneras de demostrar quién eres antes de entrar. Esas maneras se llaman **métodos de autenticación**.
+
+</Analogy>
+
+## ¿Qué es un método de autenticación en Vault?
+
+Un método de autenticación es el proceso mediante el cual Vault verifica tu identidad antes de darte acceso a los secretos (contraseñas, tokens, claves API) que protege.
+
+Sin autenticación, cualquiera podría acceder a tus secretos. Con autenticación, solo las personas o aplicaciones autorizadas pueden entrar.
+
+## Los métodos de autenticación más comunes
+
+**Username/Password (Usuario y contraseña):** La forma clásica. Ingresas un nombre de usuario y una contraseña. Vault los verifica.
+
+**LDAP/Active Directory:** Si tu empresa usa un directorio central de usuarios, Vault puede conectarse a él para validarte automáticamente.
+
+**Token:** Vault te da un token (una cadena especial de caracteres). Ese token es tu "entrada VIP" temporal.
+
+**OAuth 2.0 / OIDC:** Para aplicaciones modernas que usan servicios como Google o Azure.
+
+**Kubernetes:** Si tu aplicación corre en Kubernetes, ese sistema puede autenticarte automáticamente.
+
+## Configurar métodos de autenticación en la UI
+
+La interfaz visual de Vault (la UI) es el lugar donde, sin escribir comandos, puedes activar y configurar estos métodos.
+
+Para acceder, abre el navegador y ve a la dirección donde corre Vault (normalmente `http://localhost:8200`). Necesitarás estar como administrador.
+
+En el menú lateral, ve a **"Access"** y luego **"Auth Methods"**.
+
+Desde allí puedes:
+
+- **Habilitar un nuevo método** (botón "+ Enable New Method")
+- **Configurar sus parámetros** (qué usuarios acepta, qué políticas asigna)
+- **Probar la autenticación** (verificar que funciona)
+
+<CopyCmd cmd="vault auth list" />
+
+Este comando (en terminal) te muestra todos los métodos activos. En la UI, ves lo mismo pero visualmente.
+
+## ¿Por qué es importante?
+
+Configurar autenticación correctamente es el primer paso para que tu Vault sea seguro. Sin esto, el resto de protecciones no funcionan.
+
+La UI simplifica todo: no necesitas memorizar comandos complejos.
+
+## Puntos clave
+
+- Un método de autenticación es cómo demuestras quién eres antes de acceder a secretos en Vault.
+- Los métodos más usados son Username/Password, LDAP, Tokens, OAuth y Kubernetes.
+- En la UI, accedes a "Access > Auth Methods" para habilitarlos y configurarlos.
+- La UI te permite hacer esto sin usar la línea de comandos.
+- Configurar autenticación correctamente es el cimiento de cualquier Vault seguro.

@@ -1,0 +1,30 @@
+---
+objectiveId: "7a"
+taskSlug: "vault-reference-architecture-guide"
+kind: "notes-es"
+title: "Vault Architecture"
+source: "ismet55555"
+sourceUrl: "https://github.com/ismet55555/Hashicorp-Certified-Vault-Associate-Notes/blob/main/README.md"
+license: "MIT"
+order: 2
+---
+
+Conceptual:
+
+- Clientes -> API -> Vault -> Backend
+- Backend
+  - Autenticación
+  - Políticas
+  - Secrets Engines
+  - Audit Logging
+- Frontend
+  - Clientes (CLI, SDK, etc) -> API -> Vault
+  - Los clientes usan tokens de Vault para hacer cosas
+
+Logical:
+
+- Vault crea una barrera
+- Cualquier cosa que entra en la barrera está encriptada
+- En el frontend, la comunicación de la API con Vault es con TLS Certificate
+- En el backend, Vault almacena en el almacenamiento backend, esto también está encriptado a través de claves de encriptación
+- API -> Barrier -> Vault -> Barrier -> Storage

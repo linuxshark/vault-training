@@ -1,0 +1,55 @@
+---
+objectiveId: "4a"
+taskSlug: "secrets-management"
+kind: "explained"
+title: "Secrets Management"
+source: "claude"
+sourceUrl: "https://developer.hashicorp.com/vault/tutorials/secrets-management"
+license: "original"
+order: 1
+estMinutes: 10
+---
+
+<Analogy>
+Imagina que guardas las llaves de tu casa en un pequeño cofre cerrado en tu dormitorio. El problema es que si alguien entra, encuentra el cofre, lo abre y accede a todo. Vault es como un banco de seguridad: guarda tus "llaves digitales" (contraseñas, tokens, certificados) en un lugar muy protegido, y solo tú (o tus aplicaciones autorizadas) puedes acceder pidiendo permiso cada vez que las necesitas.
+</Analogy>
+
+## ¿Qué es Secrets Management en Vault?
+
+Secrets Management es la tarea de **guardar, proteger y entregar información sensible** de forma segura. No se trata solo de almacenamiento: es un sistema completo donde cada acceso se registra, se controlan permisos y las claves pueden expirar automáticamente.
+
+## Por qué necesitas Vault para esto
+
+Sin una herramienta como Vault, los desarrolladores a menudo guardan contraseñas en archivos de configuración o las escriben en el código. Esto es peligroso: si el código se filtra o alguien accede al servidor, todo está comprometido. Vault centraliza y asegura todo, como un guardaespaldas para tus secretos.
+
+## Cómo funciona en la práctica
+
+Primero, **guardas un secreto** en Vault (por ejemplo, la contraseña de tu base de datos). Vault lo encripta y lo almacena. Luego, cuando tu aplicación lo necesita, hace una solicitud autenticada a Vault. Si Vault verifica que tienes permiso, te entrega el secreto. Si lo intentas después de que expires, Vault te dice "no".
+
+Piensa en esto: tu aplicación nunca tiene la contraseña hardcodeada. La pide cuando la necesita, y Vault controla quién puede pedirla, cuándo y desde dónde.
+
+## Casos reales
+
+- **Contraseñas de bases de datos**: Tu aplicación se conecta a PostgreSQL pidiendo la credencial a Vault cada vez.
+- **Tokens de API**: Servicios externos reciben accesos temporales que expiran automáticamente.
+- **Certificados SSL**: Vault genera y renueva certificados sin intervención manual.
+
+## Un primer comando
+
+Para guardar un secreto básico en Vault, usarías algo así:
+
+<CopyCmd cmd="vault kv put secret/myapp/database password=securepass123" />
+
+Para recuperarlo:
+
+<CopyCmd cmd="vault kv get secret/myapp/database" />
+
+Vault responde mostrando el valor, pero todo queda registrado en sus logs de auditoría.
+
+## Puntos clave
+
+- Vault **centraliza y encripta** todos tus secretos en un único lugar seguro.
+- No almacena contraseñas en código ni archivos de configuración; las solicitas a Vault cuando las necesitas.
+- Cada acceso se **registra y controla** mediante permisos (políticas) y puede expirar automáticamente.
+- Funciona con bases de datos, APIs, certificados y cualquier dato sensible que tu aplicación necesite.
+- El objetivo final es reducir riesgo eliminando secretos hardcodeados de tu infraestructura.

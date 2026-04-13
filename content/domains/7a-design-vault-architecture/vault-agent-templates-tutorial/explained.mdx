@@ -1,0 +1,64 @@
+---
+objectiveId: "7a"
+taskSlug: "vault-agent-templates-tutorial"
+kind: "explained"
+title: "Vault Agent Templates tutorial"
+source: "claude"
+sourceUrl: "https://developer.hashicorp.com/vault/tutorials/vault-agent/agent-templates"
+license: "original"
+order: 1
+estMinutes: 10
+---
+
+<Analogy>
+
+Imagina que tienes un buzón de correos en casa. Cada vez que llega correo importante (como tu contraseña de banco), lo guardas ahí. Pero necesitas que alguien vaya a ese buzón, recoja la carta, la lea, y te deje una copia *formateada* sobre tu escritorio cada mañana automáticamente.
+
+Vault Agent Templates hace exactamente eso: va al "buzón" (Vault), trae secretos (contraseñas, tokens, certificados), y los deja en archivos listos para usar en tus aplicaciones.
+
+</Analogy>
+
+## ¿Qué es Vault Agent Templates?
+
+Vault Agent es un pequeño programa que corre en tu servidor o computadora. Su trabajo es conectarse a Vault (el guardaespaldas de secretos) y traer información sensible de forma segura.
+
+Templates es la parte que *reformatea* esos secretos. Piensa en templates como moldes: tú defines cómo quieres que se vea el archivo final, y Vault Agent lo rellena con los valores reales.
+
+## Un ejemplo práctico
+
+Digamos que tu aplicación necesita conectarse a una base de datos. Necesita:
+
+- **Host**: db.example.com
+- **Usuario**: admin
+- **Contraseña**: (guardada en Vault)
+
+En lugar de hardcodear la contraseña en tu código, creas un template:
+
+```
+database_url = "postgresql://{{ with secret "secret/data/db" }}{{ .Data.data.username }}:{{ .Data.data.password }}@{{ .Data.data.host }}/mydb{{ end }}"
+```
+
+Vault Agent lee esto, consulta Vault, y genera un archivo `.env` real con los valores verdaderos.
+
+## ¿Por qué es importante?
+
+Tienes varias ventajas:
+
+1. **No expones secretos en código**: Los archivos de configuración nunca contienen contraseñas reales.
+2. **Rotación automática**: Si Vault cambia la contraseña, Vault Agent lo detecta y actualiza tu archivo.
+3. **Centralizado**: Un solo lugar (Vault) para gestionar todos los secretos.
+4. **Sin intervención manual**: La máquina maneja todo sin que tengas que hacer nada.
+
+## Cómo se ve en la práctica
+
+Instalas Vault Agent en tu servidor, le das un archivo de configuración que dice "ve a Vault, trae el secreto X, genera el archivo Y con el template Z", y listo. El agent corre en background cuidando que todo esté actualizado.
+
+Es como tener a alguien que constantemente verifica el buzón, actualiza tu escritorio, y se asegura de que siempre tengas la información fresca sin que tengas que pedirle nada.
+
+## Puntos clave
+
+- **Vault Agent Templates automatiza** la entrega y formateado de secretos en archivos listos para usar.
+- **Templates usan Handlebars** (un lenguaje simple con `{{ }}`) para definir dónde van los secretos.
+- **Rotación automática**: Si el secreto cambia en Vault, el archivo se actualiza sin interrumpir tu aplicación.
+- **Reduce riesgo**: Los secretos nunca están hardcodeados ni en repositorios de código.
+- **Ideal para arquitecturas grandes** donde múltiples aplicaciones necesitan secretos diferentes de forma centralizada.

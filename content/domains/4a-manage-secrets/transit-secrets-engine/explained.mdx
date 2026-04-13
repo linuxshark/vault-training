@@ -1,0 +1,68 @@
+---
+objectiveId: "4a"
+taskSlug: "transit-secrets-engine"
+kind: "explained"
+title: "transit secrets engine"
+source: "claude"
+sourceUrl: "https://developer.hashicorp.com/vault/tutorials/encryption-as-a-service/eaas-transit"
+license: "original"
+order: 1
+estMinutes: 10
+---
+
+<Analogy>
+Imagina que tienes un buzón de correos en la calle. Cualquiera puede meter cartas, pero solo tú tienes la llave para abrirlo. El Transit Secrets Engine de Vault es exactamente así: un servicio que cifra tus datos sensibles sin que Vault necesite guardarlos. Tu aplicación mete el dato sensible, Vault lo encripta con su llave, y devuelve el resultado cifrado. La aplicación solo ve el cifrado, no el secreto real.
+</Analogy>
+
+## ¿Qué es el Transit Secrets Engine?
+
+Es un motor (feature) de Vault que cifra y descifra datos usando claves que Vault gestiona. La diferencia clave: **Vault no almacena tus secretos, solo los transforma**.
+
+Piénsalo así: en lugar de guardar contraseñas en Vault, usas Vault para encriptar las contraseñas que tienes en otros sistemas (bases de datos, archivos, APIs). Es cifrado como servicio.
+
+## Cómo funciona en la práctica
+
+Tu aplicación dice: "Vault, cifra este número de tarjeta" → Vault lo encripta → tu app guarda el resultado cifrado en una base de datos normal.
+
+Después: tu app dice "Vault, descifra esto" → Vault lo descifra → tu app recibe el número de tarjeta en memoria.
+
+El punto crucial: **solo Vault tiene las claves maestras**. Tu base de datos tiene basura ilegible.
+
+## Ejemplo con comandos
+
+Primero, habilitas el Transit Engine:
+
+<CopyCmd cmd="vault secrets enable transit" />
+
+Luego creas una clave de cifrado llamada "mi-clave":
+
+<CopyCmd cmd="vault write -f transit/keys/mi-clave" />
+
+Ahora cifras datos:
+
+<CopyCmd cmd="vault write transit/encrypt/mi-clave plaintext=$(echo -n 'secreto123' | base64)" />
+
+Vault te devuelve algo como `vault:v1:K8s9L2m4Np...` (ilegible).
+
+Para descifrar:
+
+<CopyCmd cmd="vault write transit/decrypt/mi-clave ciphertext='vault:v1:K8s9L2m4Np...'" />
+
+Vault devuelve el original en base64.
+
+## ¿Por qué es útil?
+
+- **No guardas secretos en Vault**: solo usas su poder de cifrado.
+- **Control centralizado de claves**: cambias de clave sin tocar tu app.
+- **Auditoría**: Vault registra quién cifra y descifra.
+- **Cumplimiento**: ideal para GDPR, PCI-DSS (datos sensibles cifrados).
+
+Es perfecto cuando tu app ya tiene una base de datos y quieres proteger los datos sin rediseñar todo.
+
+## Puntos clave
+
+- **Transit cifra datos sin almacenarlos**: tu app cifra datos en Vault y guarda el resultado cifrado en otro lado.
+- **Vault gestiona las claves maestras**: solo él puede descifrar; la base de datos solo ve números sin sentido.
+- **Rotación de claves sin dolor**: cambia la clave en Vault; los datos antiguos siguen siendo descifrados automáticamente.
+- **Ideal para bases de datos existentes**: añade seguridad sin reescribir la arquitectura.
+- **Uso práctico**: números de tarjeta, SSN, PII cifrados mientras están en reposo.

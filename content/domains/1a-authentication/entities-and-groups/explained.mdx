@@ -1,0 +1,72 @@
+---
+objectiveId: "1a"
+taskSlug: "entities-and-groups"
+kind: "explained"
+title: "entities and groups"
+source: "claude"
+sourceUrl: "https://developer.hashicorp.com/vault/tutorials/auth-methods/identity"
+license: "original"
+order: 1
+estMinutes: 10
+---
+
+# Entities y Groups en Vault
+
+<Analogy>
+Imagina que trabajas en una empresa grande. Cada persona tiene un carnet de empleado (ese es un "entity" en Vault). Pero además, esos empleados se agrupan por departamentos: el equipo de IT, el de ventas, el de finanzas (esos son los "groups"). Cuando le das permisos a todo el departamento de IT a la vez, es más fácil que darle permisos a cada empleado individualmente. Vault funciona exactamente así.
+</Analogy>
+
+## ¿Qué es una Entity?
+
+Una **entity** es la identidad digital única de un usuario en Vault. Piensa en ella como tu pasaporte dentro del sistema. Cuando alguien se autentica (entra con usuario y contraseña, token, certificado, etc.), Vault les crea o reconoce una entity.
+
+Cada entity tiene:
+- Un ID único
+- Metadata (información sobre quién eres)
+- Aliases (formas diferentes de conectarse, como "username en LDAP" o "certificado X.509")
+
+## ¿Qué es un Group?
+
+Un **group** es un contenedor que agrupa varias entities. Es como decir "estos 10 empleados forman el equipo de seguridad". El beneficio principal: cuando das permisos a un group, todos sus miembros heredan esos permisos automáticamente.
+
+## Cómo funcionan juntos
+
+Imagina que necesitas que tu equipo de DevOps acceda a los secretos de bases de datos.
+
+En lugar de:
+1. Crear policies individuales para Alice
+2. Crear policies individuales para Bob
+3. Crear policies individuales para Carol
+
+Haces esto:
+1. Asignas a Alice, Bob y Carol a un **group** llamado "devops-team"
+2. Añades una **policy** al group que permite acceso a secretos de BD
+3. Listo. Los tres pueden acceder.
+
+## Ejemplo práctico
+
+Primero, crearías una entity:
+
+<CopyCmd cmd="vault write identity/entity name=alice policies=default" />
+
+Luego, crearías un group:
+
+<CopyCmd cmd="vault write identity/group name=devops-team policies=devops-policy" />
+
+Y finalmente, añadirías la entity al group:
+
+<CopyCmd cmd="vault write identity/group/devops-team member_entity_ids=alice" />
+
+Desde ese momento, Alice hereda automáticamente el acceso que tenga el group "devops-team".
+
+## Por qué es importante
+
+Sin entities y groups, cada cambio de permisos sería manual y caótico. Con ellos, tu infraestructura de seguridad escala fácilmente: agregar un nuevo DevOps es solo meterlo en el group correcto.
+
+## Puntos clave
+
+- Una **entity** = identidad única de una persona en Vault
+- Un **group** = colección de entities que comparten los mismos permisos
+- Los groups heredan policies, así que cambios globales son más simples
+- Una entity puede pertenecer a múltiples groups
+- Los aliases dentro de una entity permiten autenticarse de varias formas

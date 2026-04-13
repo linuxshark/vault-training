@@ -1,0 +1,147 @@
+---
+objectiveId: "7a"
+taskSlug: "vault-reference-architecture-guide"
+kind: "lab"
+title: "Audit Devices Lab"
+source: "btkrausen"
+sourceUrl: "https://github.com/btkrausen/vault-codespaces/blob/main/labs/lab_audit_devices.md"
+license: "Apache-2.0"
+order: 3
+---
+
+Laboratorio: **Audit Devices Lab**
+
+→ [Abrir en GitHub Codespaces](https://github.com/btkrausen/vault-codespaces/blob/main/labs/lab_audit_devices.md)
+
+```bash
+# Check Vault status
+vault status
+
+# Log in with a valid token
+vault login root
+```
+
+```bash
+# Create directory for audit logs with appropriate permissions
+mkdir -p /var/log/vault
+chown vault:vault /var/log/vault
+
+# Enable file audit device
+vault audit enable file file_path=/var/log/vault/audit.log
+
+# Verify audit device is enabled
+vault audit list
+
+# View more details about the audit device, including the targeted path/file
+vault audit list --detailed
+```
+
+```bash
+# Enable KV secrets engine if not already enabled
+vault secrets enable -path=secret kv-v2
+
+# Repeat the step above to purposely create an error
+vault secrets enable -path=secret kv-v2
+
+# Create a test secret
+vault kv put secret/test-secret username=admin password=vault-demo
+```
+
+```bash
+vault kv get secret/test-secret
+```
+
+```bash
+vault kv put secret/test-secret username=admin password=updated-password
+```
+
+```bash
+vault kv list secret/
+```
+
+```bash
+vault kv delete secret/test-secret
+```
+
+```bash
+# View raw audit logs
+cat /var/log/vault/audit.log
+
+# Parse JSON logs with jq (if installed)
+cat /var/log/vault/audit.log | jq '.'
+
+# Search for specific operations performed above
+grep "secret/test-secret" /var/log/vault/audit.log | jq '.'
+```
+
+```bash
+# Find all KV secret operations
+grep "secret/" /var/log/vault/audit.log | jq '.'
+
+# Look for specific authentication events
+grep "login" /var/log/vault/audit.log | jq '.'
+
+# Find error events
+grep "error" /var/log/vault/audit.log | jq '.'
+```
+
+```bash
+# Create logrotate configuration
+tee /etc/logrotate.d/vault <<EOF
+/var/log/vault/audit.log {
+    daily
+    rotate 7
+    compress
+    delaycompress
+    missingok
+    notifempty
+    create 0640 vault vault
+}
+EOF
+
+# View the contents of the vault audit directory (and see there's only one file)
+ls /var/log/vault
+
+# Force a log rotatation
+logrotate -f /etc/logrotate.d/vault
+
+# View the contents of the vault audit directory (and see the rotated file)
+# Notice that audit.log is now empty
+ls /var/log/vault
+```
+
+```bash
+# Disable audit device
+vault audit disable file/
+
+# Re-enable with different options
+vault audit enable -path=file2 file file_path=/var/log/vault/audit2.log
+
+# List all enabled audit devices
+vault audit list -detailed
+```
+
+```bash
+# Fix permissions on audit log directory
+chown -R vault:vault /var/log/vault
+chmod 0740 /var/log/vault
+```
+
+```bash
+# Check disk space usage
+du -sh /var/log/vault/
+
+# Clean up old rotated logs
+find /var/log/vault/ -name "audit.log.*" -mtime +30 -delete
+```
+
+```bash
+# Disable audit device
+vault audit disable file/
+
+# Remove audit logs
+rm -rf /var/log/vault/audit.log*
+
+# Remove logrotate configuration
+rm /etc/logrotate.d/vault
+```

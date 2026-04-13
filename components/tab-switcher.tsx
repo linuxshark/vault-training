@@ -18,11 +18,12 @@ export function TabSwitcher({
 }: {
   taskId: string;
   initialStatus: Status;
-  panels: Record<TabKey, ReactNode | null>;
+  panels: Record<TabKey, ReactNode | null> & { notesEs?: ReactNode | null };
 }) {
   const [active, setActive] = useState<TabKey>(firstAvailable(panels));
   const [status, setStatus] = useState<Status>(initialStatus);
   const [busy, setBusy] = useState(false);
+  const [notesLang, setNotesLang] = useState<"en" | "es">("en");
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -52,6 +53,10 @@ export function TabSwitcher({
     setBusy(false);
   }
 
+  const hasNotesEs = !!panels.notesEs;
+  const activeNotesPanel =
+    active === "notes" && notesLang === "es" && hasNotesEs ? panels.notesEs : panels[active];
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between border-b border-border-subtle">
@@ -78,10 +83,24 @@ export function TabSwitcher({
             );
           })}
         </div>
-        <StatusPill status={status} onClick={() => void advance(nextStatus(status))} />
+        <div className="flex items-center gap-2">
+          {active === "notes" && hasNotesEs && (
+            <button
+              onClick={() => setNotesLang((l) => (l === "en" ? "es" : "en"))}
+              className={cn(
+                "rounded border px-2 py-0.5 text-xs font-medium transition-colors",
+                "border-border-subtle text-text-muted hover:border-accent hover:text-text",
+              )}
+              title={notesLang === "en" ? "Ver en español" : "View in English"}
+            >
+              {notesLang === "en" ? "ES" : "EN"}
+            </button>
+          )}
+          <StatusPill status={status} onClick={() => void advance(nextStatus(status))} />
+        </div>
       </div>
       <div className="prose prose-invert prose-headings:font-semibold prose-code:font-mono prose-code:text-sm prose-pre:bg-[#010409] prose-a:text-blue max-w-none">
-        {panels[active]}
+        {activeNotesPanel}
       </div>
     </div>
   );

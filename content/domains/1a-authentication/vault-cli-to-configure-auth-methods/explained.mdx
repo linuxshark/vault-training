@@ -1,0 +1,61 @@
+---
+objectiveId: "1a"
+taskSlug: "vault-cli-to-configure-auth-methods"
+kind: "explained"
+title: "Vault CLI to configure auth methods"
+source: "claude"
+sourceUrl: "https://developer.hashicorp.com/vault/tutorials/auth-methods/enable-auth-method"
+license: "original"
+order: 1
+estMinutes: 10
+---
+
+<Analogy>
+Imagina que tu casa tiene diferentes puertas de entrada. Una puerta solo abre con huella dactilar, otra con contraseña, otra reconoce tu cara. Vault funciona igual: tiene múltiples "puertas" (métodos de autenticación) para que diferentes personas o sistemas entren de manera segura. Tu trabajo es configurar cuáles puertas están disponibles y cómo funcionan.
+</Analogy>
+
+## ¿Qué es un método de autenticación en Vault?
+
+Es el mecanismo que Vault usa para verificar tu identidad antes de permitirte acceder a secretos. Sin autenticación, cualquiera podría obtener las contraseñas de tu base de datos. Con ella, solo las personas o sistemas autorizados entran.
+
+Vault viene con varios métodos listos: contraseña tradicional (userpass), tokens de GitHub, certificados, y muchos más. Tu trabajo es decidir cuál usar según tu situación.
+
+## Habilitar un método de autenticación
+
+Por defecto, solo el método "token" está activo. Para usar otro, debes habilitarlo explícitamente.
+
+El comando básico es:
+
+<CopyCmd cmd="vault auth enable userpass" />
+
+Esto activa el método userpass, que funciona con usuario y contraseña tradicional. Vault te confirmará que está habilitado.
+
+## Crear credenciales en ese método
+
+Una vez habilitado, configuras quién puede entrar. Por ejemplo, para crear un usuario:
+
+<CopyCmd cmd="vault write auth/userpass/users/maria password=micontraseña123" />
+
+Ahora María puede autenticarse con ese usuario y contraseña.
+
+## Probar la autenticación
+
+Para verificar que funciona, te autentificas:
+
+<CopyCmd cmd="vault login -method=userpass username=maria" />
+
+Vault te pide la contraseña, la verifica, y si es correcta, te devuelve un token. Ese token es tu "pase" para acceder a los secretos que tengas permiso de ver.
+
+## ¿Por qué es importante esto?
+
+Sin configurar autenticación, Vault no sirve de mucho. Es como tener una caja fuerte pero sin candado. Al habilitar y configurar métodos de autenticación, garantizas que solo las personas o aplicaciones correctas accedan a información sensible.
+
+En resumen: enables un método, creas credenciales en ese método, y luego los usuarios se autentifican para obtener un token que les permite acceder a secretos.
+
+## Puntos clave
+
+- Un **método de autenticación** es cómo Vault verifica que eres quien dices ser.
+- El comando `vault auth enable` activa un nuevo método (userpass, GitHub, etc.).
+- Después de habilitar, usas `vault write` para crear usuarios o credenciales en ese método.
+- Los usuarios se autentifican con `vault login` y reciben un token si sus credenciales son válidas.
+- El token es el pasaporte que permite acceder a secretos en Vault.

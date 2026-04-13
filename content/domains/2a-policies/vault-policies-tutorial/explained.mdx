@@ -1,0 +1,87 @@
+---
+objectiveId: "2a"
+taskSlug: "vault-policies-tutorial"
+kind: "explained"
+title: "Vault policies tutorial"
+source: "claude"
+sourceUrl: "https://developer.hashicorp.com/vault/tutorials/policies/policies"
+license: "original"
+order: 1
+estMinutes: 10
+---
+
+<Analogy>
+Imagina que tienes una caja fuerte en tu casa. No todos los miembros de la familia pueden abrir todas las secciones. Tu hijo solo puede acceder al dinero de su mesada, tu pareja puede ver los documentos importantes, y el fontanero que viene a arreglar algo no puede entrar en nada. Las **policies de Vault** funcionan exactamente así: son las reglas que definen quién puede hacer qué con los secretos guardados.
+</Analogy>
+
+## Qué son las Policies
+
+Una policy es un conjunto de permisos escritos en un formato específico que le dice a Vault: "este usuario puede leer este secreto, pero no puede borrarlo" o "este administrador puede hacer cualquier cosa". Sin policies, Vault es como una caja fuerte sin cerraduras.
+
+Vault viene con dos policies predefinidas:
+
+1. **root** - acceso total a todo (úsalo solo para emergencias).
+2. **default** - permisos básicos muy limitados (para usuarios nuevos).
+
+## Cómo funcionan las Policies
+
+Las policies se escriben en un formato llamado HCL. No es complicado. Aquí te muestro un ejemplo simple:
+
+```
+path "secret/data/database" {
+  capabilities = ["read", "list"]
+}
+```
+
+Esto significa: "puedo leer y listar archivos dentro de `secret/data/database`, pero no crear ni borrar".
+
+Los **capabilities** (capacidades) principales son:
+- `read` - ver un secreto
+- `write` - crear o modificar
+- `delete` - eliminar
+- `list` - listar lo que hay en una carpeta
+- `sudo` - ejecutar operaciones privilegiadas
+
+## Ejemplo práctico
+
+Digamos que tienes un equipo de desarrolladores que necesita acceder solo a contraseñas de base de datos en desarrollo, no en producción.
+
+Crearías una policy llamada `dev-team`:
+
+```
+path "secret/data/dev/*" {
+  capabilities = ["read", "list"]
+}
+
+path "secret/data/prod/*" {
+  capabilities = ["deny"]
+}
+```
+
+Luego asignarías esa policy a cada miembro del equipo. Si intentan acceder a `secret/data/prod/password`, Vault les dice "no".
+
+## Cómo crear y asignar una Policy
+
+Para crear una policy:
+
+<CopyCmd cmd="vault policy write dev-team @policy.hcl" />
+
+Para ver qué policies tienes:
+
+<CopyCmd cmd="vault policy list" />
+
+Para asignar una policy a un usuario cuando se autentica:
+
+<CopyCmd cmd="vault auth enable userpass" />
+
+<CopyCmd cmd="vault write auth/userpass/users/juan password=mipassword policies=dev-team" />
+
+Ahora Juan solo puede acceder a lo que la policy `dev-team` permite.
+
+## Puntos clave
+
+- Las policies son las reglas de acceso en Vault: definen quién ve qué.
+- Se escriben en formato HCL y tienen capacidades (read, write, delete, list).
+- Vault viene con `root` (todo) y `default` (casi nada).
+- Asignas policies a usuarios cuando se autentican.
+- Usa wildcards (`*`) en paths para aplicar permisos a múltiples secretos.

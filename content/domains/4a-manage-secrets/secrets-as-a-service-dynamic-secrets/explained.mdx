@@ -1,0 +1,60 @@
+---
+objectiveId: "4a"
+taskSlug: "secrets-as-a-service-dynamic-secrets"
+kind: "explained"
+title: "Secrets as a Service: Dynamic Secrets"
+source: "claude"
+sourceUrl: "https://developer.hashicorp.com/vault/tutorials/db-credentials/database-secrets"
+license: "original"
+order: 1
+estMinutes: 10
+---
+
+<Analogy>
+Imagina que tienes un restaurante y necesitas que los cocineros accedan a la despensa. En lugar de darles una llave maestra que funciona para siempre, prefieres entregar llaves temporales que se autodestruyen después de 8 horas. Si alguien roba una llave, solo puede entrar durante ese tiempo limitado. Eso es exactamente lo que hace Vault con los secretos dinámicos: crea credenciales que existen temporalmente y se destruyen automáticamente.
+</Analogy>
+
+## ¿Qué son los secretos dinámicos?
+
+Los secretos dinámicos son credenciales que Vault genera sobre la marcha cuando las necesitas, en lugar de almacenar contraseñas preexistentes. No son estáticas ni permanentes: nacen, se usan y mueren automáticamente.
+
+Con los secretos estáticos tradicionales, tú creas una contraseña, la guardas en Vault y cuando alguien la pide, Vault la devuelve tal cual. El problema: si esa contraseña se filtra, sigue siendo válida hasta que la cambies manualmente.
+
+Con los secretos dinámicos, todo es diferente. Vault se conecta directamente a tu base de datos (PostgreSQL, MySQL, MongoDB, etc.) y crea un usuario nuevo en tiempo real. Ese usuario tiene una contraseña aleatoria y una fecha de expiración. Cuando expira, Vault lo elimina automáticamente de la base de datos.
+
+## Un ejemplo práctico
+
+Supongamos que tu aplicación necesita acceso a una base de datos PostgreSQL:
+
+1. La aplicación solicita credenciales a Vault
+2. Vault se conecta a PostgreSQL y crea un usuario nuevo con contraseña aleatoria
+3. Vault devuelve esas credenciales a la aplicación
+4. La aplicación usa esas credenciales durante, digamos, 1 hora
+5. Pasada 1 hora, Vault automáticamente borra ese usuario de PostgreSQL
+6. La aplicación debe pedir nuevas credenciales para continuar
+
+Para configurar esto, primero le dices a Vault cómo conectarse a tu base de datos:
+
+<CopyCmd cmd="vault write database/config/my-postgres plugin_name=postgresql-database-plugin allowed_roles=\"readonly,readwrite\" connection_url=\"postgresql://{{username}}:{{password}}@localhost:5432/mydatabase\" username=\"vault\" password=\"your-vault-password\"" />
+
+Luego defines qué tipo de usuario quieres crear:
+
+<CopyCmd cmd="vault write database/roles/readonly db_name=my-postgres creation_statements=\"CREATE USER \\\"{{name}}\\\" WITH PASSWORD '{{password}}' VALID UNTIL '{{expiration}}'; GRANT SELECT ON ALL TABLES IN SCHEMA public TO \\\"{{name}}\\\";\" default_ttl=\"1h\" max_ttl=\"24h\"" />
+
+Ahora, cuando alguien solicita credenciales:
+
+<CopyCmd cmd="vault read database/creds/readonly" />
+
+Vault genera un usuario temporal en PostgreSQL y te entrega la contraseña. Listo.
+
+## Ventajas principales
+
+Los secretos dinámicos son más seguros porque la ventana de exposición es limitada. Si alguien obtiene una contraseña, solo funciona durante minutos u horas, no meses. Además, auditar quién accedió a qué y cuándo es mucho más fácil, porque cada acceso deja rastro en Vault.
+
+## Puntos clave
+
+- Los secretos dinámicos se crean bajo demanda, no se almacenan previamente
+- Vault se conecta directamente a tu base de datos y crea usuarios temporales con contraseñas aleatorias
+- Las credenciales expiran automáticamente y Vault las elimina de la base de datos
+- El TTL (Time To Live) controla cuánto tiempo vive la credencial
+- Cada solicitud de credenciales se audita, mejorando la trazabilidad y seguridad

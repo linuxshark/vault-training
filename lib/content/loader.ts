@@ -21,6 +21,7 @@ export interface LoadedTask {
   taskSlug: string;
   explained?: LoadedMdx;
   notes?: LoadedMdx;
+  notesEs?: LoadedMdx;
   lab?: LoadedMdx;
   externalLinks: { label: string; url: string }[];
 }
@@ -55,9 +56,10 @@ export async function loadTask(objectiveId: string, taskSlug: string): Promise<L
   if (!task) return null;
 
   const dir = path.join(contentRoot(), "domains", `${objective.id}-${objective.slug}`, task.slug);
-  const [explained, notes, lab] = await Promise.all([
+  const [explained, notes, notesEs, lab] = await Promise.all([
     readMdx(path.join(dir, "explained.mdx")),
     readMdx(path.join(dir, "notes.mdx")),
+    readMdx(path.join(dir, "notes-es.mdx")),
     readMdx(path.join(dir, "lab.mdx")),
   ]);
 
@@ -74,5 +76,5 @@ export async function loadTask(objectiveId: string, taskSlug: string): Promise<L
     externalLinks.push({ label: "Lab codespace", url: lab.frontmatter.sourceUrl });
   }
 
-  return { objectiveId, taskSlug, explained, notes, lab, externalLinks };
+  return { objectiveId, taskSlug, explained, notes, notesEs, lab, externalLinks };
 }

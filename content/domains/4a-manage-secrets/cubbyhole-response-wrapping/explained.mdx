@@ -1,0 +1,53 @@
+---
+objectiveId: "4a"
+taskSlug: "cubbyhole-response-wrapping"
+kind: "explained"
+title: "Cubbyhole Response Wrapping"
+source: "claude"
+sourceUrl: "https://developer.hashicorp.com/vault/tutorials/secrets-management/cubbyhole-response-wrapping"
+license: "original"
+order: 1
+estMinutes: 10
+---
+
+<Analogy>
+Imagina que tienes un regalo que quieres enviar de forma segura. En lugar de poner el regalo directamente en la caja, lo envuelves varias veces: primero en papel, luego en una bolsa, y finalmente en una caja más grande. El destinatario solo puede abrir cada capa con una clave especial. Response Wrapping en Vault es exactamente esto: envuelve tus secretos en capas de protección extra.
+</Analogy>
+
+## ¿Qué es Response Wrapping?
+
+Response Wrapping es un mecanismo de Vault que toma cualquier respuesta (que contiene secretos) y la "envuelve" en otra capa de seguridad antes de entregarla. En lugar de recibir directamente tu contraseña o token, obtienes un token temporal llamado "wrapping token" que necesitas canjear para acceder al secreto real.
+
+## ¿Por qué es importante?
+
+Protege tus secretos en tránsito. Si alguien intercepta la comunicación entre tu aplicación y Vault, solo verá el wrapping token, no el secreto en sí. El wrapping token es como un comprobante de que alguien te debe un secreto, pero no es el secreto mismo.
+
+## El flujo paso a paso
+
+Primero, tu aplicación pide un secreto a Vault indicando que quiere respuesta envuelta. Vault no devuelve el secreto directamente. En su lugar, crea un wrapping token con una duración corta (por defecto 24 horas) y lo devuelve. Luego, tu aplicación usa ese wrapping token para "desempacar" y obtener el secreto real en un segundo paso.
+
+## Ejemplo práctico
+
+Supón que necesitas una contraseña de base de datos. Sin wrapping, Vault te la devuelve directamente en la respuesta. Con wrapping, Vault te dice: "Aquí está tu comprobante (wrapping token). Úsalo para retirar tu contraseña cuando realmente la necesites."
+
+<CopyCmd cmd="vault read -wrap-ttl=1h secret/data/database" />
+
+Este comando solicita un secreto y pide que la respuesta se envuelva con validez de 1 hora.
+
+Luego, desempaquetas así:
+
+<CopyCmd cmd="vault unwrap s.xxxxxx" />
+
+Donde `s.xxxxxx` es el wrapping token.
+
+## Caso especial: Cubbyhole
+
+Cubbyhole es el método de almacenamiento que Vault usa internamente para guardar la respuesta envuelta de forma temporal. Cada usuario en Vault tiene su propio "cubículo" privado donde se almacenan estos secretos envueltos. Solo ese usuario puede acceder a su cubículo.
+
+## Puntos clave
+
+- Response Wrapping envuelve secretos en una capa adicional de seguridad usando un wrapping token temporal.
+- El wrapping token debe canjearse (unwrap) para obtener el secreto real.
+- Cubbyhole es el almacenamiento privado que Vault usa para guardar las respuestas envueltas.
+- Los wrapping tokens tienen una TTL (tiempo de vida) corto, limitando la ventana de exposición.
+- Protege contra interceptación de secretos en tránsito entre tu aplicación y Vault.

@@ -1,0 +1,63 @@
+---
+objectiveId: "1a"
+taskSlug: "approle-pull-authentication"
+kind: "explained"
+title: "AppRole Pull Authentication"
+source: "claude"
+sourceUrl: "https://developer.hashicorp.com/vault/tutorials/auth-methods/approle"
+license: "original"
+order: 1
+estMinutes: 10
+---
+
+<Analogy>
+Imagina que tienes una caja fuerte en tu casa. En lugar de tener una sola llave maestra, decides crear un sistema especial para que tu empresa pueda acceder a ella automáticamente. No quieres que una persona entre con un usuario y contraseña. Necesitas que una aplicación o servicio se autentique sin intervención humana. AppRole en Vault funciona exactamente así: es un método para que máquinas y aplicaciones demuestren quiénes son y obtengan acceso a secretos.
+</Analogy>
+
+## ¿Qué es AppRole?
+
+AppRole es un método de autenticación diseñado específicamente para máquinas y aplicaciones, no para personas. Cuando tu aplicación necesita acceder a información sensible almacenada en Vault (contraseñas, tokens, certificados), necesita probarse a sí misma. AppRole proporciona esa credencial.
+
+## Cómo funciona el modelo "Pull"
+
+El modelo "Pull" significa que **tu aplicación solicita activamente** el acceso a los secretos. No es Vault quien te envía la información; eres tú quien la pide.
+
+El proceso tiene dos pasos:
+
+Primero, tu aplicación presenta dos credenciales: un **RoleID** (algo como tu número de identidad fija) y un **SecretID** (algo como una contraseña temporal). Vault verifica ambas. Si son válidas, Vault entrega un **token** de acceso.
+
+Segundo, tu aplicación usa ese token para pedir los secretos reales que necesita. Por ejemplo, la contraseña de tu base de datos o una clave API.
+
+## Un ejemplo práctico
+
+Digamos que tienes una aplicación web que necesita conectarse a PostgreSQL. En lugar de guardar la contraseña en el código (muy peligroso), haces esto:
+
+<CopyCmd cmd="vault write auth/approle/role/my-app token_ttl=1h" />
+
+Esto crea un rol llamado "my-app". Luego generas credenciales:
+
+<CopyCmd cmd="vault read auth/approle/role/my-app/role-id" />
+
+Y obtén un SecretID:
+
+<CopyCmd cmd="vault write -f auth/approle/role/my-app/secret-id" />
+
+Tu aplicación usa estas dos credenciales para autenticarse, recibe un token temporal, y con ese token extrae la contraseña de PostgreSQL del Vault.
+
+## Ventajas de AppRole
+
+No requiere intervención humana. La aplicación se gestiona completamente sola.
+
+Es flexible: puedes crear múltiples roles, cada uno con permisos diferentes.
+
+Los SecretID pueden expirar automáticamente, aumentando la seguridad.
+
+Funciona perfectamente en entornos de orquestación como Kubernetes.
+
+## Puntos clave
+
+- **AppRole** es autenticación máquina-a-máquina; tu aplicación, no una persona, se autentica.
+- El modelo **Pull** significa que la app solicita activamente los secretos usando RoleID + SecretID.
+- Después de autenticarse, Vault entrega un **token temporal** que la app usa para acceder a secretos reales.
+- Los SecretID pueden configurarse con **expiración automática** para mayor seguridad.
+- AppRole es ideal para **automatización y entornos cloud** donde no hay usuarios interactivos.

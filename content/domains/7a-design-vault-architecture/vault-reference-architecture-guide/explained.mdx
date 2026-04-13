@@ -1,0 +1,57 @@
+---
+objectiveId: "7a"
+taskSlug: "vault-reference-architecture-guide"
+kind: "explained"
+title: "Vault Reference Architecture guide"
+source: "claude"
+sourceUrl: "https://developer.hashicorp.com/vault/tutorials/day-one-raft/raft-reference-architecture"
+license: "original"
+order: 1
+estMinutes: 10
+---
+
+<Analogy>
+Imagina que necesitas construir una bóveda de banco. No puedes simplemente poner una caja fuerte en tu casa. Tienes que pensar en dónde va, cómo acceder a ella, quién la custodia, cómo se conecta con las sucursales, y qué pasa si el edificio se quema. La arquitectura de referencia de Vault es exactamente eso: un plano de cómo construir tu sistema de secretos de forma segura y confiable.
+</Analogy>
+
+## ¿Qué es la arquitectura de referencia de Vault?
+
+Es un modelo que HashiCorp propone para desplegar Vault en producción. Te dice dónde poner cada componente, cuántos servidores necesitas, cómo conectarlos y cómo manejar desastres.
+
+## Los componentes principales
+
+**Cluster de Vault:** Son múltiples servidores Vault trabajando juntos. Uno es el "líder" (el que toma decisiones) y los demás son "seguidores" (que responden en caso de emergencia).
+
+**Almacenamiento (Storage Backend):** Es donde Vault guarda todos los secretos. La referencia recomienda usar Raft, un método que replica automáticamente los datos entre servidores. Así si uno falla, los datos siguen seguros en otros.
+
+**Load Balancer:** Un intermediario que distribuye las peticiones entre los servidores Vault. Los clientes no hablan directamente con Vault, sino con este distribuidor.
+
+**Infraestructura subyacente:** Los servidores físicos o virtuales donde corre todo. La guía sugiere al menos 3 servidores para que el sistema sea resiliente.
+
+## Por qué importa el diseño
+
+Sin una buena arquitectura, tu sistema de secretos será lento, poco confiable o vulnerable. Con ella:
+
+- Puedes perder un servidor sin que se caiga todo
+- Los secretos se sincronizan automáticamente
+- El acceso es rápido y equilibrado
+- Recuperarte de desastres es posible
+
+## En la práctica
+
+Cuando diseñas Vault siguiendo la referencia, típicamente:
+
+1. Despliegas 3 instancias de Vault con Raft integrado
+2. Pones un load balancer frente a ellas
+3. Configuras backups automáticos
+4. Defines políticas de acceso claras
+
+La guía oficial de HashiCorp describe esto paso a paso con diagramas. No es complicado si entiendes que se trata de hacer Vault confiable, rápido y fácil de mantener.
+
+## Puntos clave
+
+- La arquitectura de referencia es un plano para desplegar Vault seguramente en producción
+- Usa al menos 3 servidores Vault con Raft para replicación automática de datos
+- Un load balancer distribuye las peticiones entre los servidores
+- El diseño garantiza que un fallo de servidor no derrumbe todo el sistema
+- Siempre incluye backups y planes de recuperación ante desastres

@@ -1,0 +1,103 @@
+---
+objectiveId: "7a"
+taskSlug: "the-challenge-that-vault-agent-solves"
+kind: "notes-es"
+title: "Vault Agent"
+source: "ismet55555"
+sourceUrl: "https://github.com/ismet55555/Hashicorp-Certified-Vault-Associate-Notes/blob/main/README.md"
+license: "MIT"
+order: 2
+---
+
+**Docs:** https://www.vaultproject.io/docs/agent
+
+
+- vault agent es un deamon o servicio cliente
+- Parte del binario de vault
+- Configurado usando HashiCorp Configuration Language (HCL)
+- Desafíos de integración resueltos por vault agent
+  - Manejo de autenticación
+  - Gestión de tokens y leases
+  - Almacenamiento y renovación de secretos
+- Iniciando un vault agent:
+  - `vault agent -config=/path/to/config.hcl`
+
+
+### Auto-Auth
+
+**Docs:** https://www.vaultproject.io/docs/agent/autoauth
+
+- Capacidad de vault agent para autenticar automáticamente el cliente y gestionar el token
+- Renovación del token cuando sea posible
+- **Method**
+  - Método de autenticación utilizado para autenticarse con el servidor (p. ej. userpass, approle, etc)
+- **Sink**
+  - Ubicación local donde el agent debe escribir el token
+  - Solo es un archivo local
+  - La aplicación/servicio consumirá este valor y se comunicará con el servidor vault
+- El token en el archivo sink puede estar response-wrapped o encriptado
+- La aplicación obtiene el token del sink -> solicitud de autenticación vault al agent -> el agent proxifica la solicitud de autenticación al servidor
+- Configuración de auto-auth dentro del archivo de configuración de vault agent
+  - El método de autenticación puede ser approle, aws, kubernetes, etc
+  - ```hcl
+    auto_auth {
+      method = "name" {
+        mount_path = "path/to/auth_method"
+        config = {...}                 # <-- Configuración del método de autenticación específico
+      }
+      sink = "file" {                  # <-- Único tipo de sink soportado por ahora
+        config = {
+          path = "/path/to/file"       # <-- Ruta para el archivo de token
+        } 
+      }
+   
+    ```
+
+### Caching
+
+**Docs:** https://www.vaultproject.io/docs/agent/caching
+
+- Almacenamiento en caché local de secretos y tokens
+- Todas las solicitudes deben usar vault agent, no pueden ir directamente al servidor
+- Mejora el rendimiento (lee del caché local)
+- Funciona con auto-auth para omitir la autenticación al servidor
+- Renueva secretos y tokens cuando sea posible
+- Configuración de caching dentro del archivo de configuración del agent
+  - ```hcl
+    cache {
+      use_auto_auth_token = true   # <-- Forzar a vault agent a usar el token de auto-auth
+    }
+    listener "tcp" {               # <-- También puede ser socket unix ("unix")
+      address = "127.0.0.1:8100"   # <-- vault agent escucha en esta dirección. Puede ser URL si es TCP o archivo para socket unix
+      tls_disable = true           # <-- En producción, probablemente quieras que esto sea false
+    }
+    ```
+
+### Templates
+
+**Docs:** https://www.vaultproject.io/docs/agent/template
+
+- Utiliza lenguaje de markup de Consul template (No estará en el examen)
+- Renderizar secretos a archivos
+- Toma la respuesta de secretos del servidor vault y los renderiza en archivos
+- Puede establecer permisos en archivos
+- Puede ejecutar comandos arbitrarios
+  - Crear variable de entorno referenciada posteriormente
+  - Actualizar la aplicación con información de secretos
+- Configuración de template dentro del archivo de configuración del agent
+  - ```hcl
+    template {
+      source = "template.ctmpl"     # <-- Archivo de template escrito en lenguaje Consul
+      destination = "/path/to/file" # <-- Ruta al archivo donde escribir el template renderizado
+      perm = "640"                  # <-- Permisos de archivo del archivo de destino
+    }
+    ```
+- Templating de Consul: Lectura simple de secreto de Vault
+  - **Docs:** https://github.com/hashicorp/consul-template/blob/master/docs/templating-language.md#secret
+  - Ejemplo de un archivo de template
+    - ```consul
+      {{ with secret "secret/my-secret" }}  #<-- Función "secret" y ruta al secreto en vault
+      {{ .Data.data.foo }}                  #<-- Lee la clave "foo" del secreto
+      {{ end }} 
+      ```
+    - El valor del secreto vault `my-secret`, campo `foo` será escrito en el archivo sink

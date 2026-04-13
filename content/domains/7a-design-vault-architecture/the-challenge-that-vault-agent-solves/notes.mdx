@@ -1,0 +1,103 @@
+---
+objectiveId: "7a"
+taskSlug: "the-challenge-that-vault-agent-solves"
+kind: "notes"
+title: "Vault Agent"
+source: "ismet55555"
+sourceUrl: "https://github.com/ismet55555/Hashicorp-Certified-Vault-Associate-Notes/blob/main/README.md"
+license: "MIT"
+order: 2
+---
+
+**Docs:** https://www.vaultproject.io/docs/agent
+
+
+- Vault agent is a client deamon or service
+- Part of the vault binary
+- Configured using HashiCorp Configuraiton Language (HCL)
+- Integration Challenges solved by vault agent
+  - Handling authentication
+  - Managing tokens and leases
+  - Secret storage and renewal
+- Starting a vault agent:
+  - `vault agent -config=/path/to/config.hcl`
+
+
+### Auto-Auth
+
+**Docs:** https://www.vaultproject.io/docs/agent/autoauth
+
+- Vault agent's ability to automatically authicate client and manage token
+- Renewal of token when possible
+- **Method**
+  - Auth method used to authenticate with server (ie. userpass, approle, etc)
+- **Sink**
+  - Local location where agent should wriet token
+  - Just a local file
+  - Application/Service will consume this value and talk to vault server
+- Token in the sink file can be response-wrapped or encypted
+- Application gets token from sink -> vault auth request to agent -> agent proxies auth request to server
+- Auto-auth configuraiton inside vault agent configuraiton file
+  - Auth method can be approle, aws, kubernetes, etc
+  - ```hcl
+    auto_auth {
+      method = "name" {
+        mount_path = "path/to/auth_method"
+        config = {...}                 # <-- Settings for specific auth method
+      }
+      sink = "file" {                  # <-- Only sink type supported so far
+        config = {
+          path = "/path/to/file"       # <-- Path for tokenm file
+        } 
+      }
+   
+    ```
+
+### Caching
+
+**Docs:** https://www.vaultproject.io/docs/agent/caching
+
+- Secrets and token caching locally
+- All requests must use vault agent, cannot go straight to server
+- Imporves performance (reads local cache)
+- Works with auth-auth to skip authenticaiton to server
+- Renews secrets and tokens when possible
+- Caching configuraiton inside the agent configuraiton file
+  - ```hcl
+    cache {
+      use_auto_auth_token = true   # <-- Forcing vault agent to use auto-auth token
+    }
+    listener "tcp" {               # <-- Can also be unix socket ("unix")
+      address = "127.0.0.1:8100"   # <-- Vault agent listens on this address. Can be URL if TCP or file for unix socket
+      tls_disable = true           # <-- In production, probably want this to false
+    }
+    ```
+
+### Templates
+
+**Docs:** https://www.vaultproject.io/docs/agent/template
+
+- Uses Consul template markup language (Won't be on exam)
+- Render secrets to files
+- Takes secrets response from vault server and renders them to a files
+- Can set persmisisons on files
+- Can run arbitrary commands
+  - Create environment variable referenced later
+  - Update the applicaton with secrets information
+- Tempalte configuration inside the agent configuraiton file
+  - ```hcl
+    template {
+      source = "template.ctmpl"     # <-- Template file writen in Consul language
+      destination = "/path/to/file" # <-- Path to file to write rendered template
+      perm = "640"                  # <-- File permissions of destination file
+    }
+    ```
+- Consul templating: Simple Vault secret read
+  - **Docs:** https://github.com/hashicorp/consul-template/blob/master/docs/templating-language.md#secret
+  - Example of a template file
+    - ```consul
+      {{ with secret "secret/my-secret" }}  #<-- "secret" function and path to secret in vault
+      {{ .Data.data.foo }}                  #<-- Reads "foo" key from secret
+      {{ end }} 
+      ```
+    - The value of vault secret `my-secret`, field `foo` will be written to the sink file

@@ -1,0 +1,139 @@
+---
+objectiveId: "3"
+taskSlug: "kv-v2"
+kind: "notes-es"
+title: "KV v2 notes"
+source: "ismet55555"
+sourceUrl: "https://github.com/ismet55555/Hashicorp-Certified-Vault-Associate-Notes"
+license: "MIT"
+order: 2
+---
+
+# Notas técnicas KV v2
+
+## Descripción general
+
+KV v2 es un motor de secretos de Vault que almacena pares clave-valor con versionado automático. A diferencia de KV v1, KV v2 mantiene un historial completo de todas las versiones de un secreto, permitiendo restauración y auditoría.
+
+## Características principales
+
+- **Versionado automático**: Cada actualización crea una nueva versión
+- **Historial**: Acceso a versiones anteriores de secretos
+- **Soft delete**: Marcación de versiones como eliminadas sin borrar datos
+- **Metadatos**: Almacenamiento de información adicional sobre secretos
+- **Control granular**: Políticas basadas en versiones específicas
+
+## Estructura de datos
+
+```
+/data/          # Lectura y escritura de secretos
+/metadata/      # Gestión de metadatos y versiones
+```
+
+### Ejemplo de ruta
+
+```
+vault kv get secret/data/my-secret
+vault kv get secret/metadata/my-secret
+```
+
+## Operaciones comunes
+
+### Escribir un secreto
+
+```
+vault kv put secret/my-app/database password="mypassword" username="admin"
+```
+
+### Leer la versión actual
+
+```
+vault kv get secret/my-app/database
+```
+
+### Leer una versión específica
+
+```
+vault kv get --version=2 secret/my-app/database
+```
+
+### Listar secretos
+
+```
+vault kv list secret/my-app/
+```
+
+### Eliminar una versión específica
+
+```
+vault kv delete --versions=1,2 secret/my-app/database
+```
+
+### Restaurar una versión eliminada
+
+```
+vault kv undelete --versions=1 secret/my-app/database
+```
+
+### Destruir permanentemente
+
+```
+vault kv destroy --versions=1 secret/my-app/database
+```
+
+## Metadatos de secretos
+
+KV v2 permite configurar metadatos a nivel de secreto:
+
+```
+vault kv metadata put -max-versions=5 secret/my-app/database
+```
+
+### Opciones de metadatos
+
+| Parámetro | Descripción |
+|-----------|-------------|
+| `max-versions` | Número máximo de versiones a retener |
+| `delete-version-after` | Tiempo antes de destruir automáticamente versiones |
+| `cas-required` | Requiere verificación CAS para escrituras |
+| `custom-metadata` | Pares clave-valor personalizados |
+
+## Control de versiones y políticas
+
+Las políticas pueden dirigirse a rutas específicas con versionado:
+
+```hcl
+path "secret/data/my-app/*" {
+  capabilities = ["create", "read", "update"]
+}
+
+path "secret/metadata/my-app/*" {
+  capabilities = ["list"]
+}
+```
+
+## Verificación de actualización (CAS)
+
+CAS (Compare-And-Set) previene conflictos:
+
+```
+vault kv put -cas=2 secret/my-app/database password="newpassword"
+```
+
+Esto solo actualiza si la versión actual es la versión 2.
+
+## Consideraciones de rendimiento
+
+- Retener muchas versiones aumenta el uso de almacenamiento
+- Configurar `max-versions` para limpiar automáticamente
+- Usar `delete-version-after` para expiración automática
+
+## Diferencias KV v1 vs KV v2
+
+| Característica | KV v1 | KV v2 |
+|---|---|---|
+| Versionado | No | Sí |
+| Historial | No | Sí |
+| Metadatos | No | Sí |
+| Soft delete | No | Sí |
+| CAS | No | Sí |
