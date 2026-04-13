@@ -14,4 +14,33 @@
 #     objectiveId: "3"
 #     taskSlug: "kv-v2"
 
-mappings: []
+mappings:
+  - file: "README.md"
+    heading: "Authentication Methods"
+    objectiveId: "1a"
+    taskSlug: "authentication-methods-notes"
+
+  - file: "README.md"
+    heading: "Vault Policies"
+    objectiveId: "2a"
+    taskSlug: "vault-policies-notes"
+
+  - file: "README.md"
+    heading: "Tokens"
+    objectiveId: "3a"
+    taskSlug: "tokens-notes"
+
+  - file: "README.md"
+    heading: "Secrets Engines"
+    objectiveId: "4a"
+    taskSlug: "secrets-engines-notes"
+
+  - file: "README.md"
+    heading: "Vault Agent"
+    objectiveId: "7a"
+    taskSlug: "vault-agent-notes"
+
+  - file: "README.md"
+    heading: "Vault Architecture"
+    objectiveId: "7a"
+    taskSlug: "vault-architecture-notes"

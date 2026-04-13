@@ -7,4 +7,83 @@
 #     taskSlug: "acl-policies"
 #     title: "Write ACL policies"
 
-mappings: []
+mappings:
+  - file: "labs/lab_vault_cli.md"
+    objectiveId: "1a"
+    taskSlug: "vault-cli-to-configure-auth-methods"
+    title: "Vault CLI Basics"
+
+  - file: "labs/lab_vault_ui.md"
+    objectiveId: "1a"
+    taskSlug: "vault-ui-to-configure-auth-methods"
+    title: "Vault UI"
+
+  - file: "labs/lab_userpass_auth_method.md"
+    objectiveId: "1a"
+    taskSlug: "vault-cli-to-configure-auth-methods"
+    title: "Userpass Auth Method Lab"
+
+  - file: "labs/lab_approle_auth_method.md"
+    objectiveId: "1a"
+    taskSlug: "approle-pull-authentication"
+    title: "AppRole Auth Method Lab"
+
+  - file: "labs/lab_kubernetes_auth_method.md"
+    objectiveId: "1a"
+    taskSlug: "vault-cli-to-configure-auth-methods"
+    title: "Kubernetes Auth Method Lab"
+
+  - file: "labs/lab_vault_policies.md"
+    objectiveId: "2a"
+    taskSlug: "vault-policies-tutorial"
+    title: "Vault Policies Lab"
+
+  - file: "labs/lab_vault_tokens.md"
+    objectiveId: "3a"
+    taskSlug: "tokens-tutorial"
+    title: "Vault Tokens Lab"
+
+  - file: "labs/lab_kv_secrets_engine.md"
+    objectiveId: "4a"
+    taskSlug: "versioned-key-value-secrets-engine"
+    title: "KV Secrets Engine Lab"
+
+  - file: "labs/lab_response_wrapping.md"
+    objectiveId: "4a"
+    taskSlug: "cubbyhole-response-wrapping"
+    title: "Response Wrapping Lab"
+
+  - file: "labs/lab_transit_secrets_engine.md"
+    objectiveId: "6a"
+    taskSlug: "encryption-as-a-service-transit-secrets-engine"
+    title: "Transit Secrets Engine Lab"
+
+  - file: "labs/lab_pki_secrets_engine.md"
+    objectiveId: "4a"
+    taskSlug: "secrets-management"
+    title: "PKI Secrets Engine Lab"
+
+  - file: "labs/lab_vault_init_and_unseal.md"
+    objectiveId: "7a"
+    taskSlug: "vault-reference-architecture-guide"
+    title: "Vault Init and Unseal Lab"
+
+  - file: "labs/lab_install_vault_manually.md"
+    objectiveId: "7a"
+    taskSlug: "vault-reference-architecture-guide"
+    title: "Install Vault Manually Lab"
+
+  - file: "labs/lab_audit_devices.md"
+    objectiveId: "7a"
+    taskSlug: "vault-reference-architecture-guide"
+    title: "Audit Devices Lab"
+
+  - file: "labs/lab_integrate_terraform_and_vault.md"
+    objectiveId: "7a"
+    taskSlug: "the-challenge-that-vault-agent-solves"
+    title: "Terraform and Vault Integration Lab"
+
+  - file: "labs/lab_intro_to_vault.md"
+    objectiveId: "1a"
+    taskSlug: "vault-cli-to-configure-auth-methods"
+    title: "Intro to Vault Lab"
