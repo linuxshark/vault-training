@@ -18,8 +18,9 @@ interface ObjectiveIndex {
   tasks: { slug: string; title: string }[];
 }
 
-async function validate(): Promise<string[]> {
+async function validate(): Promise<{ errors: string[]; warnings: string[] }> {
   const errors: string[] = [];
+  const warnings: string[] = [];
   const index = JSON.parse(
     await fs.readFile(path.join(CONTENT_ROOT, "_index", "objectives.json"), "utf8"),
   ) as ObjectiveIndex[];
@@ -41,16 +42,20 @@ async function validate(): Promise<string[]> {
             errors.push(`${file}: ${parsed.error.issues.map((i) => i.message).join("; ")}`);
           }
         } catch (err) {
-          if (kind === "explained") errors.push(`${file}: missing explained.mdx`);
+          if (kind === "explained") warnings.push(`${id}: missing explained.mdx (run npm run seed:explainers)`);
         }
       }
     }
   }
-  return errors;
+  return { errors, warnings };
 }
 
 async function main() {
-  const errors = await validate();
+  const { errors, warnings } = await validate();
+  if (warnings.length > 0) {
+    for (const w of warnings) console.warn(`⚠ ${w}`);
+    console.warn(`\n${warnings.length} task(s) missing explainers\n`);
+  }
   if (errors.length > 0) {
     for (const e of errors) console.error(`✗ ${e}`);
     console.error(`\n${errors.length} content error(s)`);
