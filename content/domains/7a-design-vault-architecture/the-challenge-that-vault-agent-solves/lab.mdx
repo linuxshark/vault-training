@@ -1,0 +1,113 @@
+---
+objectiveId: "7a"
+taskSlug: "the-challenge-that-vault-agent-solves"
+kind: "lab"
+title: "Terraform and Vault Integration Lab"
+source: "btkrausen"
+sourceUrl: "https://github.com/btkrausen/vault-codespaces/blob/main/labs/lab_integrate_terraform_and_vault.md"
+license: "Apache-2.0"
+order: 3
+---
+
+Laboratorio: **Terraform and Vault Integration Lab**
+
+→ [Abrir en GitHub Codespaces](https://github.com/btkrausen/vault-codespaces/blob/main/labs/lab_integrate_terraform_and_vault.md)
+
+```bash
+# Log in with a valid token
+vault login root
+
+# Check the status of Vault
+vault status
+```
+
+```bash
+vault secrets enable -path=kv kv-v2
+```
+
+```bash
+# Write a database credential secret
+vault kv put kv/database/config username="db_user" password="db_password123"
+
+# Write an API key secret
+vault kv put kv/api/keys development="dev_api_key_123" production="prod_api_key_456"
+```
+
+```bash
+vault kv get kv/database/config
+vault kv get kv/api/keys
+```
+
+```bash
+vault policy write terraform terraform-policy.hcl
+```
+
+```bash
+vault policy read terraform
+```
+
+```bash
+vault token create \
+    -policy=terraform \
+    -display-name=terraform-config \
+    -metadata=purpose="terraform-infrastructure" \
+    -metadata=environment="dev" \
+    -metadata=owner="infrastructure-team"
+```
+
+```bash
+mkdir vault-terraform-lab
+cd vault-terraform-lab
+```
+
+```bash
+export VAULT_TOKEN='<your-terraform-token>'  # Use the token created in Step 4.2 above
+```
+
+```bash
+terraform init
+```
+
+```bash
+terraform plan
+```
+
+```bash
+terraform apply
+```
+
+```bash
+terraform output
+```
+
+```bash
+terraform output database_username
+terraform output database_password
+terraform output dev_api_key
+terraform output prod_api_key
+```
+
+```bash
+unset VAULT_TOKEN
+```
+
+```bash
+vault token revoke <your-terraform-token>
+```
+
+```bash
+vault policy delete terraform
+```
+
+```bash
+terraform destroy
+```
+
+```bash
+vault kv delete kv/database/config
+vault kv delete kv/api/keys
+```
+
+```bash
+vault secrets disable kv
+```

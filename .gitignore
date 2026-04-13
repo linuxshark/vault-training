@@ -51,5 +51,5 @@ next-env.d.ts
 # superpowers (local tooling)
 .superpowers/
 
-# generated content (populated by ingestion scripts)
-/content
+# data directory (SQLite database, never commit)
+/data

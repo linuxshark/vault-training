@@ -1,0 +1,90 @@
+---
+objectiveId: "6a"
+taskSlug: "encryption-as-a-service-transit-secrets-engine"
+kind: "lab"
+title: "Transit Secrets Engine Lab"
+source: "btkrausen"
+sourceUrl: "https://github.com/btkrausen/vault-codespaces/blob/main/labs/lab_transit_secrets_engine.md"
+license: "Apache-2.0"
+order: 3
+---
+
+Laboratorio: **Transit Secrets Engine Lab**
+
+→ [Abrir en GitHub Codespaces](https://github.com/btkrausen/vault-codespaces/blob/main/labs/lab_transit_secrets_engine.md)
+
+```bash
+# Log in with a valid token
+vault login root
+
+# Enable the Transit secrets engine
+vault secrets enable transit
+```
+
+```bash
+vault write -f transit/keys/my-app
+```
+
+```bash
+# Encode data in base64
+echo -n "sensitive data" | base64
+
+# Encrypt the data
+vault write transit/encrypt/my-app plaintext=$(echo -n "sensitive data" | base64)
+```
+
+```bash
+# Store the ciphertext from previous step
+CIPHER="vault:v1:abc123..." # Use your actual ciphertext
+
+# Decrypt
+vault write transit/decrypt/my-app ciphertext=$CIPHER
+```
+
+```bash
+echo "base64-output" | base64 -d  # Replace with actual output
+```
+
+```bash
+vault write -f transit/keys/my-app/rotate
+```
+
+```bash
+vault read transit/keys/my-app
+```
+
+```bash
+vault write transit/encrypt/my-app plaintext=$(echo -n "new data" | base64)
+```
+
+```bash
+# Set minimum decryption version
+vault write transit/keys/my-app/config min_decryption_version=1
+
+# Set minimum encryption version
+vault write transit/keys/my-app/config min_encryption_version=1
+
+# Enable key deletion
+vault write transit/keys/my-app/config deletion_allowed=true
+```
+
+```bash
+vault write transit/keys/my-app-2 \
+    type="aes256-gcm96" \
+    exportable=false \
+    deletion_allowed=true
+```
+
+```bash
+vault write -f transit/datakey/plaintext/my-app
+```
+
+```bash
+vault write -f transit/datakey/wrapped/my-app
+```
+
+```bash
+vault delete transit/keys/my-app
+vault delete transit/keys/my-app-2
+vault secrets disable transit
+```

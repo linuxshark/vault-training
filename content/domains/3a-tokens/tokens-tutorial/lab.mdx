@@ -1,0 +1,88 @@
+---
+objectiveId: "3a"
+taskSlug: "tokens-tutorial"
+kind: "lab"
+title: "Vault Tokens Lab"
+source: "btkrausen"
+sourceUrl: "https://github.com/btkrausen/vault-codespaces/blob/main/labs/lab_vault_tokens.md"
+license: "Apache-2.0"
+order: 3
+---
+
+Laboratorio: **Vault Tokens Lab**
+
+→ [Abrir en GitHub Codespaces](https://github.com/btkrausen/vault-codespaces/blob/main/labs/lab_vault_tokens.md)
+
+```bash
+# Log in with a valid token
+vault login root
+
+# Create a token
+vault token create
+```
+
+```bash
+vault token create \
+    -policy="default" \
+    -ttl="1h" \
+    -explicit-max-ttl="2h"
+```
+
+```bash
+vault token create -type=batch \
+    -ttl="1h" \
+    -policy="default"
+```
+
+```bash
+# Lookup service token
+vault token lookup <service_token>
+
+# Lookup batch token (notice fewer properties)
+vault token lookup <batch_token>
+```
+
+```bash
+vault token create -period="24h" \
+    -policy="default"
+```
+
+```bash
+vault token renew <periodic_token>
+```
+
+```bash
+vault token create -orphan \
+    -policy="default" \
+    -ttl="1h"
+```
+
+```bash
+# Create child of service token
+VAULT_TOKEN=<service_token> vault token create
+
+# Create orphan - no parent relationship
+vault token create -orphan
+```
+
+```bash
+vault write auth/token/roles/app-role \
+    allowed_policies="default" \
+    orphan=true \
+    token_period="1h" \
+    renewable=true
+```
+
+```bash
+vault token create -role=app-role
+```
+
+```bash
+export VAULT_TOKEN="root"
+
+# Revoke tokens
+vault token revoke <token>
+
+# Remove token role
+vault delete auth/token/roles/app-role
+```

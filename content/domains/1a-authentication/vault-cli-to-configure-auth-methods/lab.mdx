@@ -1,0 +1,80 @@
+---
+objectiveId: "1a"
+taskSlug: "vault-cli-to-configure-auth-methods"
+kind: "lab"
+title: "Intro to Vault Lab"
+source: "btkrausen"
+sourceUrl: "https://github.com/btkrausen/vault-codespaces/blob/main/labs/lab_intro_to_vault.md"
+license: "Apache-2.0"
+order: 3
+---
+
+Laboratorio: **Intro to Vault Lab**
+
+→ [Abrir en GitHub Codespaces](https://github.com/btkrausen/vault-codespaces/blob/main/labs/lab_intro_to_vault.md)
+
+```bash
+vault status
+```
+
+```bash
+vault login root
+```
+
+```bash
+vault secrets list
+```
+
+```bash
+vault secrets list -detailed
+```
+
+```bash
+vault auth list
+```
+
+```bash
+vault auth list -detailed
+```
+
+```bash
+vault kv put secret/first hello=world
+vault kv put secret/my-secret username=admin password=secret123
+```
+
+```bash
+vault kv get secret/first
+vault kv get -field=hello secret/first
+```
+
+```bash
+vault kv list secret/
+```
+
+```bash
+vault kv delete secret/first
+```
+
+```bash
+vault token lookup
+```
+
+```bash
+vault token capabilities secret/first
+```
+
+```bash
+vault token create -ttl=1h
+```
+
+```bash
+vault kv put secret/user - <<EOF
+{
+  "data": {
+    "username": "admin",
+    "password": "secret",
+    "email": "admin@example.com"
+  }
+}
+EOF
+```

@@ -1,0 +1,63 @@
+---
+objectiveId: "3a"
+taskSlug: "know-when-a-token-expires-and-no-longer-renewable"
+kind: "explained"
+title: "know when a token expires and no longer renewable"
+source: "claude"
+sourceUrl: "https://developer.hashicorp.com/vault/tutorials/get-started/introduction-tokens"
+license: "original"
+order: 1
+estMinutes: 10
+---
+
+<Analogy>
+Imagina que tu tarjeta de débito tiene una fecha de vencimiento. Después de esa fecha, no funciona. Pero algunos bancos te permiten renovarla antes de que expire. Sin embargo, hay un límite: aunque renueves la tarjeta varias veces, en algún momento el banco dice "no, ya no puedo renovarla más". Así funcionan los tokens en Vault.
+</Analogy>
+
+## ¿Qué es un token en Vault?
+
+Un token es tu "pase de acceso" a Vault. Te lo dan cuando te autentificas (cuando Vault verifica quién eres), y lo usas para acceder a los secretos guardados.
+
+## Los dos tipos de límites de tiempo
+
+Cada token tiene dos conceptos importantes:
+
+**TTL (Time To Live):** Es cuánto tiempo vive el token antes de expirar. Por ejemplo, un token puede tener 1 hora de TTL. Pasada esa hora, el token muere.
+
+**Max TTL:** Es el máximo tiempo que un token puede vivir en total, incluso si lo renuevas. Aunque renueves el token 10 veces, cuando alcance el Max TTL, punto final.
+
+## ¿Cuándo ya no se puede renovar?
+
+Un token deja de ser renovable en dos situaciones:
+
+1. **Vence su TTL sin renovación:** Si no lo renuevas antes de que se acabe el tiempo, expira. Es como cuando tu tarjeta vence y no la usaste.
+
+2. **Alcanza el Max TTL:** Aunque lo renueves constantemente, cuando el tiempo total desde su creación llega al Max TTL, Vault dice no. Ya no acepta renovaciones.
+
+Supongamos: TTL = 1 hora, Max TTL = 24 horas. Puedes renovar el token cada hora durante el primer día, pero después de 24 horas desde su creación original, se acabó. No importa cuántas veces lo intentes renovar.
+
+## Cómo verificar el estado de un token
+
+Puedes revisar cuándo expira tu token con:
+
+<CopyCmd cmd="vault token lookup" />
+
+Este comando te muestra:
+- **TTL restante:** cuánto tiempo le queda antes de expirar si no lo renuevas.
+- **Max TTL:** el tope máximo de vida del token.
+
+## ¿Cómo renovar un token?
+
+Si el token aún está válido y dentro de su Max TTL:
+
+<CopyCmd cmd="vault token renew" />
+
+Esto reinicia el contador del TTL, dándote más tiempo de uso.
+
+## Puntos clave
+
+- Un token es tu acceso a Vault, con una fecha de vencimiento.
+- **TTL** = cuánto tiempo vive antes de expirar si no lo renuevas.
+- **Max TTL** = el límite absoluto de vida del token, incluso renovándolo.
+- Después del Max TTL, el token no se puede renovar bajo ninguna circunstancia.
+- Usa `vault token lookup` para verificar cuándo expira tu token.

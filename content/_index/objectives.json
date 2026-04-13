@@ -1,0 +1,182 @@
+[
+  {
+    "id": "1a",
+    "slug": "authentication",
+    "title": "Authentication",
+    "orderIndex": 1,
+    "officialUrl": "https://developer.hashicorp.com/vault/tutorials/associate-cert-003/associate-study-003",
+    "tasks": [
+      {
+        "slug": "vault-cli-to-configure-auth-methods",
+        "title": "Vault CLI to configure auth methods",
+        "orderIndex": 1,
+        "officialUrl": "https://developer.hashicorp.com/vault/tutorials/auth-methods/enable-auth-method"
+      },
+      {
+        "slug": "vault-ui-to-configure-auth-methods",
+        "title": "Vault UI to configure auth methods",
+        "orderIndex": 2,
+        "officialUrl": "https://developer.hashicorp.com/vault/tutorials/get-started/learn-ui"
+      },
+      {
+        "slug": "approle-pull-authentication",
+        "title": "AppRole Pull Authentication",
+        "orderIndex": 3,
+        "officialUrl": "https://developer.hashicorp.com/vault/tutorials/auth-methods/approle"
+      },
+      {
+        "slug": "entities-and-groups",
+        "title": "entities and groups",
+        "orderIndex": 4,
+        "officialUrl": "https://developer.hashicorp.com/vault/tutorials/auth-methods/identity"
+      }
+    ]
+  },
+  {
+    "id": "2a",
+    "slug": "policies",
+    "title": "Policies",
+    "orderIndex": 2,
+    "officialUrl": "https://developer.hashicorp.com/vault/tutorials/associate-cert-003/associate-study-003",
+    "tasks": [
+      {
+        "slug": "vault-policies-tutorial",
+        "title": "Vault policies tutorial",
+        "orderIndex": 1,
+        "officialUrl": "https://developer.hashicorp.com/vault/tutorials/policies/policies"
+      },
+      {
+        "slug": "impact-on-policy-application",
+        "title": "impact on policy application",
+        "orderIndex": 2,
+        "officialUrl": "https://developer.hashicorp.com/vault/tutorials/get-started/introduction-policies"
+      }
+    ]
+  },
+  {
+    "id": "3a",
+    "slug": "tokens",
+    "title": "Tokens",
+    "orderIndex": 3,
+    "officialUrl": "https://developer.hashicorp.com/vault/tutorials/associate-cert-003/associate-study-003",
+    "tasks": [
+      {
+        "slug": "tokens-tutorial",
+        "title": "tokens tutorial",
+        "orderIndex": 1,
+        "officialUrl": "https://developer.hashicorp.com/vault/tutorials/tokens"
+      },
+      {
+        "slug": "characteristics-of-batch-tokens",
+        "title": "characteristics of batch tokens",
+        "orderIndex": 2,
+        "officialUrl": "https://developer.hashicorp.com/vault/tutorials/tokens/batch-tokens"
+      },
+      {
+        "slug": "know-when-a-token-expires-and-no-longer-renewable",
+        "title": "know when a token expires and no longer renewable",
+        "orderIndex": 3,
+        "officialUrl": "https://developer.hashicorp.com/vault/tutorials/get-started/introduction-tokens"
+      }
+    ]
+  },
+  {
+    "id": "4a",
+    "slug": "manage-secrets",
+    "title": "Manage secrets",
+    "orderIndex": 4,
+    "officialUrl": "https://developer.hashicorp.com/vault/tutorials/associate-cert-003/associate-study-003",
+    "tasks": [
+      {
+        "slug": "secrets-management",
+        "title": "Secrets Management",
+        "orderIndex": 1,
+        "officialUrl": "https://developer.hashicorp.com/vault/tutorials/secrets-management"
+      },
+      {
+        "slug": "versioned-key-value-secrets-engine",
+        "title": "Versioned Key/Value Secrets Engine",
+        "orderIndex": 2,
+        "officialUrl": "https://developer.hashicorp.com/vault/tutorials/secrets-management/versioned-kv"
+      },
+      {
+        "slug": "cubbyhole-response-wrapping",
+        "title": "Cubbyhole Response Wrapping",
+        "orderIndex": 3,
+        "officialUrl": "https://developer.hashicorp.com/vault/tutorials/secrets-management/cubbyhole-response-wrapping"
+      },
+      {
+        "slug": "secrets-as-a-service-dynamic-secrets",
+        "title": "Secrets as a Service: Dynamic Secrets",
+        "orderIndex": 4,
+        "officialUrl": "https://developer.hashicorp.com/vault/tutorials/db-credentials/database-secrets"
+      },
+      {
+        "slug": "transit-secrets-engine",
+        "title": "transit secrets engine",
+        "orderIndex": 5,
+        "officialUrl": "https://developer.hashicorp.com/vault/tutorials/encryption-as-a-service/eaas-transit"
+      }
+    ]
+  },
+  {
+    "id": "7a",
+    "slug": "design-vault-architecture",
+    "title": "Design Vault architecture",
+    "orderIndex": 5,
+    "officialUrl": "https://developer.hashicorp.com/vault/tutorials/associate-cert-003/associate-study-003",
+    "tasks": [
+      {
+        "slug": "vault-reference-architecture-guide",
+        "title": "Vault Reference Architecture guide",
+        "orderIndex": 1,
+        "officialUrl": "https://developer.hashicorp.com/vault/tutorials/day-one-raft/raft-reference-architecture"
+      },
+      {
+        "slug": "including-hashicorp-managed-clusters-on-hcp",
+        "title": "including HashiCorp managed clusters on HCP",
+        "orderIndex": 2,
+        "officialUrl": "https://developer.hashicorp.com/vault/tutorials/get-started-hcp-vault-dedicated"
+      },
+      {
+        "slug": "challenges-that-vso-solves",
+        "title": "challenges that VSO solves",
+        "orderIndex": 3,
+        "officialUrl": "https://developer.hashicorp.com/vault/tutorials/kubernetes/vault-secrets-operator"
+      },
+      {
+        "slug": "the-challenge-that-vault-agent-solves",
+        "title": "the challenge that Vault Agent solves",
+        "orderIndex": 4,
+        "officialUrl": "https://developer.hashicorp.com/vault/tutorials/vault-agent/agent-aws"
+      },
+      {
+        "slug": "vault-agent-templates-tutorial",
+        "title": "Vault Agent Templates tutorial",
+        "orderIndex": 5,
+        "officialUrl": "https://developer.hashicorp.com/vault/tutorials/vault-agent/agent-templates"
+      }
+    ]
+  },
+  {
+    "id": "6a",
+    "slug": "manage-encryption-as-a-service",
+    "title": "Manage encryption as a service",
+    "orderIndex": 6,
+    "officialUrl": "https://developer.hashicorp.com/vault/tutorials/associate-cert-003/associate-study-003",
+    "tasks": [
+      {
+        "slug": "encryption-as-a-service-transit-secrets-engine",
+        "title": "Encryption as a Service: Transit Secrets Engine",
+        "orderIndex": 1,
+        "officialUrl": "https://developer.hashicorp.com/vault/tutorials/encryption-as-a-service/eaas-transit"
+      },
+      {
+        "slug": "transit-secrets-re-wrapping",
+        "title": "Transit Secrets Re-wrapping",
+        "orderIndex": 2,
+        "officialUrl": "https://developer.hashicorp.com/vault/tutorials/encryption-as-a-service/eaas-transit-rewrap"
+      }
+    ]
+  }
+]

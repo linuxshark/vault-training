@@ -1,0 +1,170 @@
+---
+objectiveId: "4a"
+taskSlug: "secrets-management"
+kind: "lab"
+title: "PKI Secrets Engine Lab"
+source: "btkrausen"
+sourceUrl: "https://github.com/btkrausen/vault-codespaces/blob/main/labs/lab_pki_secrets_engine.md"
+license: "Apache-2.0"
+order: 3
+---
+
+Laboratorio: **PKI Secrets Engine Lab**
+
+→ [Abrir en GitHub Codespaces](https://github.com/btkrausen/vault-codespaces/blob/main/labs/lab_pki_secrets_engine.md)
+
+```bash
+vault secrets enable -path=pki_root pki
+```
+
+```bash
+vault secrets tune -max-lease-ttl=87600h pki_root
+```
+
+```bash
+vault write pki_root/root/generate/internal \
+    common_name="Lab Root CA" \
+    ttl=87600h
+```
+
+```bash
+vault write -format=json pki_root/root/generate/internal \
+    common_name="Lab Root CA" \
+    ttl=87600h > root_ca.json
+
+cat root_ca.json | jq -r .data.certificate > root_ca.pem
+```
+
+```bash
+vault write pki_root/config/urls \
+    issuing_certificates="http://vault.lab:8200/v1/pki_root/ca" \
+    crl_distribution_points="http://vault.lab:8200/v1/pki_root/crl"
+```
+
+```bash
+vault secrets enable -path=pki_int pki
+```
+
+```bash
+vault secrets tune -max-lease-ttl=43800h pki_int
+```
+
+```bash
+vault write pki_int/intermediate/generate/internal \
+    common_name="Lab Intermediate CA" \
+    ttl=43800h
+```
+
+```bash
+vault write -format=json pki_int/intermediate/generate/internal \
+    common_name="Lab Intermediate CA" \
+    ttl=43800h > intermediate.json
+
+cat intermediate.json | jq -r .data.csr > intermediate.csr
+```
+
+```bash
+vault write -format=json pki_root/root/sign-intermediate \
+    csr=@intermediate.csr \
+    format=pem_bundle \
+    ttl=43800h > signed_intermediate.json
+
+cat signed_intermediate.json | jq -r .data.certificate > signed_intermediate.pem
+```
+
+```bash
+vault write pki_int/intermediate/set-signed \
+    certificate=@signed_intermediate.pem
+```
+
+```bash
+vault write pki_int/roles/webapp \
+    allowed_domains="lab.local" \
+    allow_subdomains=true \
+    max_ttl=720h \
+    key_type="rsa" \
+    key_bits=2048 \
+    allowed_uri_sans="dns://lab.local" \
+    require_cn=true \
+    basic_constraints_valid_for_non_ca=true
+```
+
+```bash
+vault write pki_int/issue/webapp \
+    common_name="webapp.lab.local" \
+    ttl=72h
+```
+
+```bash
+vault write -format=json pki_int/issue/webapp \
+    common_name="webapp.lab.local" \
+    ttl=72h > webapp_cert.json
+
+# Extract each component to its own file
+cat webapp_cert.json | jq -r .data.certificate > webapp_cert.pem
+cat webapp_cert.json | jq -r .data.private_key > webapp_key.pem
+cat webapp_cert.json | jq -r .data.ca_chain[] > webapp_ca_chain.pem
+
+# [Optional] View each file to see the contents
+cat webapp_cert.pem
+cat webapp_key.pem
+cat webapp_ca_chain.pem
+```
+
+```bash
+# For the CLI-generated certificate, copy the certificate content to a file first
+# For the file-based certificate:
+openssl x509 -in webapp_cert.pem -text -noout
+```
+
+```bash
+# Directly from CLI output when generating
+vault write pki_int/issue/webapp common_name="temp.lab.local" ttl=72h
+
+# Or from a saved certificate
+openssl x509 -in webapp_cert.pem -noout -serial
+```
+
+```bash
+vault write pki_int/revoke \
+    serial_number=<serial_number_from_certificate>
+```
+
+```bash
+vault write pki_int/config/urls \
+    issuing_certificates="http://vault.lab:8200/v1/pki_int/ca" \
+    crl_distribution_points="http://vault.lab:8200/v1/pki_int/crl"
+```
+
+```bash
+vault policy write policy-webapp-pki webapp-policy.hcl
+```
+
+```bash
+vault write pki_int/issue/webapp \
+         common_name="webapp.lab.local" \
+         alt_names="app.lab.local,api.lab.local" \
+         ttl=72h
+```
+
+```bash
+vault write pki_int/issue/webapp \
+       common_name="*.lab.local" \
+       ttl=72h
+```
+
+```bash
+vault write pki_int/tidy \
+    tidy_cert_store=true \
+    tidy_revoked_certs=true \
+    safety_buffer=72h
+```
+
+```bash
+vault secrets disable pki_root
+vault secrets disable pki_int
+```
+
+```bash
+rm *.json *.pem *.csr
+```

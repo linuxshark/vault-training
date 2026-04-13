@@ -1,0 +1,63 @@
+---
+objectiveId: "7a"
+taskSlug: "including-hashicorp-managed-clusters-on-hcp"
+kind: "explained"
+title: "including HashiCorp managed clusters on HCP"
+source: "claude"
+sourceUrl: "https://developer.hashicorp.com/vault/tutorials/get-started-hcp-vault-dedicated"
+license: "original"
+order: 1
+estMinutes: 10
+---
+
+<Analogy>
+Imagina que tienes una caja fuerte con todos tus documentos importantes (contraseñas, certificados, llaves). Podrías guardarla en tu casa, pero es arriesgado: necesitas mantenerla, protegerla, actualizarla. O podrías alquilar un cofre en un banco profesional que se encarga de todo. Eso es lo que hace HCP Vault: es el "banco" que gestiona tu caja fuerte de secretos.
+</Analogy>
+
+## ¿Qué es HCP Vault Dedicated?
+
+HCP significa "HashiCorp Cloud Platform". Es la versión en la nube de Vault que HashiCorp gestiona por ti. En lugar de instalar y mantener Vault en tus propios servidores, HashiCorp se encarga de actualizaciones, copias de seguridad y disponibilidad.
+
+## Las dos formas de usar Vault
+
+**Opción 1: Vault Auto-Managed (en tus servidores)**
+
+Tú instalas Vault, configuras todo, haces actualizaciones, resuelves problemas. Es como tener la caja fuerte en tu casa: total control, pero más trabajo.
+
+**Opción 2: HCP Vault Dedicated (en la nube de HashiCorp)**
+
+HashiCorp mantiene los servidores, las actualizaciones, la seguridad física. Tú solo usas Vault. Es como el banco: menos trabajo, más confianza.
+
+## Diseñando tu arquitectura con HCP
+
+Cuando construyes una arquitectura con HCP Vault Dedicated, debes pensar en:
+
+**Dónde guardarás tus secretos**: bases de datos, contraseñas de aplicaciones, certificados SSL.
+
+**Quién accederá**: tus aplicaciones necesitarán credenciales para "hablar" con Vault de forma segura.
+
+**Cómo conectar**: tus aplicaciones están probablemente en servidores distintos, así que necesitas red confiable hacia HCP.
+
+## Ejemplo práctico
+
+Supón que tienes una aplicación web que necesita la contraseña de la base de datos. Sin Vault, guardarías la contraseña en un archivo (inseguro). Con HCP Vault:
+
+1. Creas una cuenta en HCP y activas Vault Dedicated.
+2. Guardas la contraseña dentro de Vault.
+3. Tu aplicación usa una credencial especial para "pedir" la contraseña a Vault cada vez que la necesita.
+
+<CopyCmd cmd="vault login -method=userpass username=mi_usuario" />
+
+Vault revisa quién eres, verifica que tengas permiso, y entrega solo lo que necesitas.
+
+## La arquitectura en capas
+
+Tu diseño tendrá: **Cloud HCP** (donde vive Vault) → **Red segura** → **Tus servidores** (donde están tus aplicaciones). Vault gestiona todo lo del lado izquierdo. Tú solo conectas.
+
+## Puntos clave
+
+- HCP Vault Dedicated es Vault completamente gestionado por HashiCorp en la nube.
+- No necesitas instalar, actualizar ni mantener servidores: HashiCorp se encarga.
+- Tus aplicaciones se conectan a HCP de forma segura para solicitar secretos.
+- Diseñar la arquitectura significa definir dónde guardarás secretos, quién accede y cómo conectar.
+- Es la opción ideal si prefieres "no pensar en infraestructura" y enfocarte en tu negocio.

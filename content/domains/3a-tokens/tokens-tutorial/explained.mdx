@@ -1,0 +1,52 @@
+---
+objectiveId: "3a"
+taskSlug: "tokens-tutorial"
+kind: "explained"
+title: "tokens tutorial"
+source: "claude"
+sourceUrl: "https://developer.hashicorp.com/vault/tutorials/tokens"
+license: "original"
+order: 1
+estMinutes: 10
+---
+
+<Analogy>
+Imagina que necesitas acceder a una discoteca. El portero no te conoce, así que le das tu documento de identidad. El portero te da una pulsera especial (el token) que dice "esta persona puede entrar hasta las 4 de la mañana". Esa pulsera es tu credencial temporal. Sin ella, no entras. Con ella, accedes a todo. Los tokens en Vault funcionan exactamente igual.
+</Analogy>
+
+## ¿Qué es un token en Vault?
+
+Un token es una credencial temporal que Vault te emite para acceder a secretos y datos sensibles. Es como una contraseña de un solo uso, pero más flexible. El token tiene una fecha de vencimiento, permisos específicos y puede ser revocado en cualquier momento.
+
+Cuando te conectas a Vault (por ejemplo, con tu usuario y contraseña), Vault no te da la contraseña de vuelta. En su lugar, te genera un token. Ese token es lo que usas para pedir secretos después.
+
+## Los tres tipos principales de tokens
+
+**Token de raíz (root token):** Es el administrador total. Puede hacer cualquier cosa en Vault. Lo usas solo al principio para configurar Vault. Después, lo guardas en un lugar muy seguro (idealmente, no lo usas más).
+
+**Token de servicio:** Es lo que obtienes cuando te autenticas con métodos normales como usuario y contraseña. Tiene permisos limitados según tu rol.
+
+**Token de batch:** Es un token de corta vida, sin historial, optimizado para máquinas que necesitan acceso rápido. Perfecto para scripts automatizados.
+
+## Características clave de los tokens
+
+Cada token tiene:
+- **TTL (Time To Live):** Cuánto tiempo vive antes de expirar. Por ejemplo, 1 hora.
+- **Permisos (policies):** Qué secretos puede acceder. Un token nunca ve todo.
+- **Renovación:** Puedes extender la vida de un token antes de que expire.
+
+<CopyCmd cmd="vault token create -ttl=1h" />
+
+Este comando crea un token que vive 1 hora.
+
+## Por qué importa esto
+
+Los tokens son el corazón de Vault. Sin ellos, no accedes a nada. Si alguien roba tu token, puede hacer lo que el token permita (pero no más). Por eso los tokens tienen vidas cortas y permisos limitados: así minimizas el daño si algo sale mal.
+
+## Puntos clave
+
+- **Los tokens son credenciales temporales** que Vault emite después de que te autentiques.
+- **Cada token tiene un TTL**: vencimiento automático. Sin renovación, muere solo.
+- **Los permisos están en policies**: un token solo accede a lo que su policy permite.
+- **Existen tres tipos**: root (admin total), servicio (usuario normal) y batch (máquinas).
+- **Los tokens se pueden revocar**: los matas manualmente cuando ya no los necesitas.

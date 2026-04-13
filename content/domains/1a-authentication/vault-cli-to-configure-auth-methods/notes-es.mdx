@@ -1,0 +1,190 @@
+---
+objectiveId: "1a"
+taskSlug: "vault-cli-to-configure-auth-methods"
+kind: "notes-es"
+title: "Authentication Methods"
+source: "ismet55555"
+sourceUrl: "https://github.com/ismet55555/Hashicorp-Certified-Vault-Associate-Notes/blob/main/README.md"
+license: "MIT"
+order: 2
+---
+
+_El propósito de los métodos de autenticación es generar un token de acceso de vault, y luego usar ese token para iniciar sesión y usar vault._
+
+- Proporcionados por plug-ins con binario
+- Se pueden habilitar múltiples métodos de autenticación
+  - También se pueden habilitar múltiples instancias para varios métodos de autenticación
+- Hacen referencia a fuentes **externas**
+  - LDAP, GitHub, AWS IAM, etc
+- Método de autenticación predeterminado
+  - Token
+  - No se puede deshabilitar
+- Todos los métodos de autenticación están en la ruta `/auth`
+
+> **Nota:** El examen cubrirá la selección del método de autenticación correcto para un escenario dado
+
+
+
+### Categorías de Métodos de Autenticación
+
+- **Proveedores de Nube:** AWS, Azure, GCP, etc
+- **Nativos de Nube:** Kubernetes, Cloud Foundry, Github, JWT
+- **Tradicionales:** LDAP, RADIUS, Kerberos, etc
+- **Nativos de Vault (Internos):** Token, AppRole, Userpass
+
+### Elegir Método de Autenticación
+
+- ¿Quién va a acceder a Vault?
+  - Externo/Interno
+  - Humano/Máquina
+- ¿Cómo van a acceder?
+- ¿Qué utilizan hoy?
+  - Cuentas de GitHub
+  - Active directory
+  - Certificados
+- Ver cuál se adapta mejor al cliente y al entorno
+
+### Método de Autenticación: Userpass
+
+**Docs:** https://www.vaultproject.io/docs/auth/userpass
+
+- Para operadores humanos
+- Compuesto únicamente por nombre de usuario y contraseña
+- Habilitar userpass:
+  - `vault auth enable userpass`
+- Ajustar userpass:
+  - `vault auth tune -description "My Userpass" userpass/`
+- Crear usuario en userpass:
+  - `vault write auth/userpass/users/<USERNAME> password=<PASSWORD>`
+- Iniciar sesión usando userpass
+  - `vault login -method=userpass username=<USERNAME>` (Solicita contraseña)
+  - `vault login -method=userpass username=<USERNAME> password=<PASSWORD>`
+
+### Método de Autenticación: AppRole
+
+**Docs:** https://www.vaultproject.io/docs/auth/approle
+
+- Usado para máquinas y aplicaciones
+- Consiste en RoleID ("Nombre de usuario") y SecretID ("Contraseña")
+- El cliente/servicio/aplicación ya tiene el RoleID y SecretID
+  - El servidor de Vault envía SecretID al cliente
+  - El cliente contiene RoleID y SecretID cuando arranca (tal vez a través de gestión de configuración o imagen)
+- **Configuración de AppRole**
+
+  - Se ejecuta en cualquier lugar antes de usar AppRole
+  - Habilitar AppRole:
+    - `vault auth enable approle`
+  - Ajustar AppRole:
+    - `vault auth tune -description "My AppRole" approle/`
+  - Crear un rol nombrado:
+    - ```
+      vault write auth/approle/role/<ROLE_NAME> \
+          role_name=<ROLE_NAME> \
+          secret_id_ttl=<SECRET_ID_TTL> \
+          token_num_uses=<TOKEN_NUM_USES> \
+          token_ttl=<TOKEN_TTL> \
+          token_max_ttl=<TOKEN_MAX_TTL>
+      ```
+
+- **Obtener el SecretId**
+
+  - Puede hacerse dentro del cliente o antes del despliegue, agregándolo a la imagen del cliente
+  - Necesita `role_id`
+    - `vault read auth/approle/role/<ROLE_NAME>/role-id`
+  - Necesita `secret_id`
+    - `vault write -force auth/approle/role/<ROLE_NAME>/secret-id`
+    - Nota el `write`, esto genera datos
+    - Se genera sobre la marcha, o se puede especificar el `secret_id`
+    - Esto produce `secret_id`, `secret_id_accessor` y `secret_id_ttl`
+
+- **Obtener el Token de Vault del Cliente**
+  - Se ejecuta por la máquina cliente para interactuar aún más con vault para su uso posterior
+  - Esto produce un token y su información
+  - Los datos pasados incluyen `role_id` y `secret_id`
+  - Usando CLI:
+    - ```
+      vault write auth/approle/login \
+          role_id=<ROLE_ID>
+          secret_id=<SECRET_ID>
+      ```
+  - Usando REST API
+    - POST a `<VAULT_ADDR>/v1/auth/approle/login`
+
+### Método de Autenticación: AWS
+
+- Habilitar AWS:
+  - `vault auth enable aws`
+- Configurar credenciales
+  - ```bash
+     vault write auth/aws/config/client \
+        secret_key=vCtSM8ZUEQ3mOFVlYPBQkf2sO6F/W7a5TVzrl3Oj \
+        access_key=VKIAJBRHKH6EVTTNXDHA
+    ```
+- Más: https://www.vaultproject.io/docs/auth/aws#authentication
+
+
+### Configuración
+
+- Todos los métodos de autenticación están habilitados en la ruta vault `/sys/auth`
+- Cuando se habilitan, todos los métodos están habilitados en una ruta
+  - Si no se especifica, la ruta por defecto es el nombre del método actual
+- Los métodos no se pueden mover después de establecerse en una ruta
+- Una vez habilitados, se pueden ajustar y configurar
+  - **Ajuste:** Operación común para todos los métodos de autenticación (es decir, cambiar descripción)
+  - **Configuración:** Específica para cada método de autenticación (en `/sys/auth/<method>/config`)
+
+### Comandos Básicos
+
+- Listar métodos de autenticación existentes
+  - `vault auth list`
+- Listar opciones disponibles
+  - `vault path-help auth/<AUTH METHOD NAME>`
+- Habilitar un método de autenticación
+  - `vault auth enable [options] TYPE`
+  - Habilitar userpass
+    - `vault auth enable userpass`
+    - `vault auth enable -path=globopass userpass` (Con ruta de autenticación personalizada)
+  - Habilitar approle
+    - `vault auth enable approle`
+- Ajustar método de autenticación:
+  - `vault auth tune [options] PATH`
+  - **Ejemplo:** Cambiar la descripción de un método de autenticación
+    - `vault auth tune -description="First userpass" globopass/`
+- Deshabilitar:
+  - **Advertencia:** Esto eliminará toda la información almacenada por este método de autenticación
+  - `vault auth disable [options] PATH`
+
+### Autenticarse (Iniciar sesión)
+
+Se puede hacer usando `vault login` o `vault write`
+
+- **Usando `vault login`**
+  - **Docs:** https://www.vaultproject.io/docs/commands/login
+  - Para métodos interactivos ver usuario
+  - Resultará en token e información del token
+  - `vault login`
+    - Solicitará un token en la terminal
+  - `vault login [TOKEN]`
+    - Utilizará el token proporcionado sin solicitar el token
+    - **Ejemplo:**
+      - `vault login s.2f3c5L1MHtnqbuNCbx90utmC`
+  - `vault login [options] [AUTH METHOD KEY-VALUE PAIRS]`
+    - Depende del método de autenticación utilizado
+    - **Ejemplos:**
+      - `vault login userpass username=<USERNAME> password=<PASSWORD>`
+      - `vault login -method=github -path=github-prod`
+  - `-token-only` - Salida solo del token de vault después de la autenticación 
+  - `-no-print` - Sin salida (silencioso)
+- **Usando `vault write`**
+  - Para una ruta de método de autenticación en particular
+  - Para cualquier otro método (AppRole, LDAP, etc)
+  - `vault write [options] PATH [KEY-VALUE PAIRS]`
+  - Depende del método de autenticación utilizado
+  - Ejemplos:
+    - `vault write auth/userpass/login/ismet password=<PASSWORD>`
+
+### Deshabilitar Método de Autenticación
+
+- `vault auth disable [options] PATH`
+  - **Ejemplo:** `vault auth disable approle/`
+  - Nota que no tuvimos que especificar la ruta (auth/approle), ya que estamos usando el sub-comando `auth` de CLI

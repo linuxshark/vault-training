@@ -1,0 +1,134 @@
+---
+objectiveId: "2a"
+taskSlug: "vault-policies-tutorial"
+kind: "lab"
+title: "Vault Policies Lab"
+source: "btkrausen"
+sourceUrl: "https://github.com/btkrausen/vault-codespaces/blob/main/labs/lab_vault_policies.md"
+license: "Apache-2.0"
+order: 3
+---
+
+Laboratorio: **Vault Policies Lab**
+
+→ [Abrir en GitHub Codespaces](https://github.com/btkrausen/vault-codespaces/blob/main/labs/lab_vault_policies.md)
+
+```bash
+# Log in with a valid token
+vault login root
+
+# Check the status of the service
+vault status
+```
+
+```bash
+vault policy write readonly-policy readonly-policy.hcl
+```
+
+```bash
+vault policy list
+vault policy read readonly-policy
+```
+
+```bash
+# Create two test secrets
+vault kv put secret/test-1 password="secret123"
+vault kv put secret/test-2 api_key="abc123"
+```
+
+```bash
+vault token create -policy=readonly-policy
+```
+
+```bash
+export VAULT_TOKEN="<paste-token-here>"
+```
+
+```bash
+# These should work
+vault kv get secret/test-1
+vault kv list secret/
+
+# These should fail
+vault kv put secret/test-3 password="newpass"
+vault kv delete secret/test-1
+```
+
+```bash
+unset VAULT_TOKEN
+vault login root
+```
+
+```bash
+vault policy write app-policy app-policy.hcl
+```
+
+```bash
+vault auth enable userpass
+```
+
+```bash
+USERPASS_ACCESSOR=$(vault auth list -format=json | jq -r '."userpass/".accessor')
+```
+
+```bash
+vault write identity/entity name="app1" policies="app-policy"
+```
+
+```bash
+vault write identity/entity-alias \
+    name="app1" \
+    mount_accessor="$USERPASS_ACCESSOR" \
+    canonical_id="<add_entity_id_here>"
+```
+
+```bash
+vault write auth/userpass/users/app1 \
+    password="password123"
+```
+
+```bash
+# Login as the user
+vault login -method=userpass \
+    username=app1 \
+    password=password123
+
+# These should succeed
+vault kv put secret/app/app1/config api_key="test123"
+vault kv get secret/app/app1/config
+
+# These should fail with 403
+vault kv put secret/app/other-app/config api_key="test123"
+vault kv put secret/test-3 password="newpass"
+```
+
+```bash
+unset VAULT_TOKEN
+vault login root
+```
+
+```bash
+vault policy write mixed-policy mixed-policy.hcl
+vault token create -policy=mixed-policy
+
+# Set your token to the new one
+export VAULT_TOKEN="<new-token>"
+
+# Test the permissions
+vault kv put secret/shared/public data="public-info"    # Should work
+vault kv put secret/shared/restricted/secret data="sensitive"  # Should fail
+```
+
+```bash
+export VAULT_TOKEN="root"
+```
+
+```bash
+vault policy delete readonly-policy
+vault policy delete app-policy
+vault policy delete mixed-policy
+vault kv delete secret/test-1
+vault kv delete secret/test-2
+vault kv delete secret/app/app1/config
+vault kv delete secret/shared/public
+```

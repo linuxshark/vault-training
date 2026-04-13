@@ -1,0 +1,56 @@
+---
+objectiveId: "6a"
+taskSlug: "transit-secrets-re-wrapping"
+kind: "explained"
+title: "Transit Secrets Re-wrapping"
+source: "claude"
+sourceUrl: "https://developer.hashicorp.com/vault/tutorials/encryption-as-a-service/eaas-transit-rewrap"
+license: "original"
+order: 1
+estMinutes: 10
+---
+
+<Analogy>
+Imagina que tienes documentos secretos en una caja fuerte. Un día decides cambiar la cerradura porque alguien vio la combinación antigua. No necesitas abrir cada documento ni cambiar su contenido: solo los sacas con la llave vieja, los metes en la nueva caja fuerte con la llave nueva, y listo. El "re-wrapping" en Vault es exactamente eso, pero con datos cifrados.
+</Analogy>
+
+## ¿Qué es Transit Re-wrapping?
+
+Transit es el servicio de Vault que cifra y descifra datos sin que tú toques las claves criptográficas. El "re-wrapping" es el proceso de volver a cifrar datos que ya estaban cifrados, típicamente porque rotaste (cambiaste) la clave de cifrado.
+
+Por ejemplo: tu aplicación tiene una contraseña almacenada cifrada con una clave llamada "v1". Luego decides rotar a "v2" por seguridad. En lugar de descifrar todo manualmente, le pides a Vault que re-encripte automáticamente con la nueva clave.
+
+## ¿Por qué es importante?
+
+Nunca debes manejar las claves criptográficas reales en tu código. Vault hace todo en un lugar seguro. Cuando rotas claves (algo recomendado regularmente), Vault te deja actualizar datos cifrados sin exponerlos.
+
+## Cómo funciona en la práctica
+
+Primero, cifras datos con Vault usando una clave específica:
+
+<CopyCmd cmd="vault write transit/encrypt/mi-clave plaintext=@archivo.txt" />
+
+Vault te devuelve el dato cifrado (el "ciphertext"). Luego rotas la clave:
+
+<CopyCmd cmd="vault write -f transit/keys/mi-clave/rotate" />
+
+Ahora usas la operación de re-wrapping para actualizar ese dato cifrado con la nueva versión de la clave, sin necesidad de descifrar:
+
+<CopyCmd cmd="vault write transit/rewrap/mi-clave ciphertext=vault:v1:..." />
+
+Vault internamente:
+1. Descifra con la clave vieja (en memoria segura)
+2. Cifra el resultado con la clave nueva
+3. Te devuelve el nuevo ciphertext
+
+## Ventajas clave
+
+Tu aplicación nunca ve datos en texto plano. Vault maneja toda la criptografía. Puedes rotar claves sin interrupciones ni exponer secretos.
+
+## Puntos clave
+
+- **Re-wrapping = re-cifrar sin exponer datos**: Vault descifra internamente con la clave antigua y cifra con la nueva, sin que salga nunca el texto plano.
+- **Ideal para rotación de claves**: Cuando cambias de clave criptográfica, re-wrapping actualiza automáticamente todos los datos cifrados.
+- **Tu aplicación nunca toca las claves reales**: Todo sucede dentro de Vault, manteniendo la seguridad.
+- **Operación atómica**: Vault garantiza que la conversión sucede completamente o no ocurre nada.
+- **Caso de uso común**: Aplicaciones legacy con datos cifrados antiguos que necesitan migrar a claves nuevas sin riesgo.
