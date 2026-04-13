@@ -1,0 +1,22 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: vault-training
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./data:/app/data
+      - ./content:/app/content:ro
+    environment:
+      DATABASE_URL: "file:/app/data/vault-training.db"
+      CONTENT_ROOT: "/app/content"
+      NODE_ENV: production
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s

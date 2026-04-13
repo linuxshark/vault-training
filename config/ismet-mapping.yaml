@@ -1,0 +1,41 @@
+# Maps files/headings from ismet55555/Hashicorp-Certified-Vault-Associate-Notes
+# to (objectiveId, taskSlug) pairs.
+#
+# taskSlug MUST match a slug that exists in content/_index/objectives.json
+#
+# Format:
+#   - file: <filename in the cloned repo>
+#     heading: <optional H2 match, trimmed>
+#     objectiveId: "<id>"
+#     taskSlug: "<slug>"
+
+mappings:
+  - file: "README.md"
+    heading: "Authentication Methods"
+    objectiveId: "1a"
+    taskSlug: "vault-cli-to-configure-auth-methods"
+
+  - file: "README.md"
+    heading: "Vault Policies"
+    objectiveId: "2a"
+    taskSlug: "vault-policies-tutorial"
+
+  - file: "README.md"
+    heading: "Tokens"
+    objectiveId: "3a"
+    taskSlug: "tokens-tutorial"
+
+  - file: "README.md"
+    heading: "Secrets Engines"
+    objectiveId: "4a"
+    taskSlug: "secrets-management"
+
+  - file: "README.md"
+    heading: "Vault Agent"
+    objectiveId: "7a"
+    taskSlug: "the-challenge-that-vault-agent-solves"
+
+  - file: "README.md"
+    heading: "Vault Architecture"
+    objectiveId: "7a"
+    taskSlug: "vault-reference-architecture-guide"

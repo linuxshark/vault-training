@@ -1,0 +1,61 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+enum Status {
+  NOT_STARTED
+  READING
+  REVIEWED
+  MASTERED
+}
+
+model Objective {
+  id         String @id
+  slug       String @unique
+  title      String
+  orderIndex Int
+  tasks      Task[]
+}
+
+model Task {
+  id          String    @id
+  slug        String
+  title       String
+  objectiveId String
+  orderIndex  Int
+  hidden      Boolean   @default(false)
+  objective   Objective @relation(fields: [objectiveId], references: [id], onDelete: Cascade)
+  progress    TaskProgress?
+  note        TaskNote?
+
+  @@unique([objectiveId, slug])
+}
+
+model TaskProgress {
+  taskId     String    @id
+  task       Task      @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  status     Status    @default(NOT_STARTED)
+  lastVisit  DateTime?
+  firstSeen  DateTime?
+  reviewedAt DateTime?
+  masteredAt DateTime?
+  updatedAt  DateTime  @updatedAt
+}
+
+model TaskNote {
+  taskId    String   @id
+  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  body      String
+  updatedAt DateTime @updatedAt
+}
+
+model StudySession {
+  id        String    @id @default(cuid())
+  startedAt DateTime  @default(now())
+  endedAt   DateTime?
+  taskId    String?
+}

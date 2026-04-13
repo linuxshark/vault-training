@@ -1,0 +1,9 @@
+[
+  {
+    "id": "3",
+    "slug": "secrets",
+    "title": "Manage secrets engines",
+    "orderIndex": 3,
+    "tasks": [{ "slug": "kv-v2", "title": "KV v2 versioning", "orderIndex": 1 }]
+  }
+]
