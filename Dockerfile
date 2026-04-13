@@ -27,7 +27,7 @@ ENV NODE_ENV=production \
     HOSTNAME=0.0.0.0
 
 RUN addgroup -S app && adduser -S app -G app
-RUN apk add --no-cache wget openssl python3 make g++
+RUN apk add --no-cache wget openssl
 
 COPY --from=builder --chown=app:app /app/public ./public
 COPY --from=builder --chown=app:app /app/.next/standalone ./
@@ -35,14 +35,7 @@ COPY --from=builder --chown=app:app /app/.next/static ./.next/static
 COPY --from=builder --chown=app:app /app/prisma ./prisma
 COPY --from=builder --chown=app:app /app/prisma.config.ts ./prisma.config.ts
 COPY --from=builder --chown=app:app /app/tsconfig.json ./tsconfig.json
-COPY --from=builder --chown=app:app /app/node_modules/.prisma ./node_modules/.prisma
-COPY --from=builder --chown=app:app /app/node_modules/@prisma ./node_modules/@prisma
-COPY --from=builder --chown=app:app /app/node_modules/better-sqlite3 ./node_modules/better-sqlite3
-COPY --from=builder --chown=app:app /app/node_modules/@prisma/adapter-better-sqlite3 ./node_modules/@prisma/adapter-better-sqlite3
-COPY --from=builder --chown=app:app /app/node_modules/.bin/tsx ./node_modules/.bin/tsx
-COPY --from=builder --chown=app:app /app/node_modules/tsx ./node_modules/tsx
-COPY --from=builder --chown=app:app /app/node_modules/prisma ./node_modules/prisma
-COPY --from=builder --chown=app:app /app/node_modules/.bin/prisma ./node_modules/.bin/prisma
+COPY --from=builder --chown=app:app /app/node_modules ./node_modules
 
 USER app
 EXPOSE 3000
