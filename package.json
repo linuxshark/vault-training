@@ -17,7 +17,8 @@
     "ingest:labs": "tsx scripts/ingest/labs.ts",
     "ingest:all": "npm run ingest:index && npm run ingest:ismet && npm run ingest:labs",
     "seed:explainers": "tsx scripts/seed-explainers.ts",
-    "content:validate": "tsx scripts/validate-content.ts"
+    "content:validate": "tsx scripts/validate-content.ts",
+    "translate:notes": "tsx scripts/translate-notes.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.3.0",

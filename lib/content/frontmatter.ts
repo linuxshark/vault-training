@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const MDX_KINDS = ["explained", "notes", "lab"] as const;
+export const MDX_KINDS = ["explained", "notes", "notes-es", "lab"] as const;
 export const SOURCES = ["claude", "ismet55555", "btkrausen"] as const;
 
 export type MdxKind = (typeof MDX_KINDS)[number];

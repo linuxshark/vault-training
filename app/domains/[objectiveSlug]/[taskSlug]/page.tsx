@@ -26,9 +26,10 @@ export default async function TaskView({
   await touchVisit(prisma, taskId);
   const progress = await getProgress(prisma, taskId);
 
-  const [explained, notes, lab] = await Promise.all([
+  const [explained, notes, notesEs, lab] = await Promise.all([
     loaded.explained ? compileTaskMdx(loaded.explained) : null,
     loaded.notes ? compileTaskMdx(loaded.notes) : null,
+    loaded.notesEs ? compileTaskMdx(loaded.notesEs) : null,
     loaded.lab ? compileTaskMdx(loaded.lab) : null,
   ]);
 
@@ -85,6 +86,7 @@ export default async function TaskView({
           panels={{
             explained: explained?.content ?? null,
             notes: notes?.content ?? null,
+            notesEs: notesEs?.content ?? null,
             lab: lab?.content ?? null,
           }}
         />
