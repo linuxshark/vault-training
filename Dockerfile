@@ -33,10 +33,14 @@ COPY --from=builder --chown=app:app /app/public ./public
 COPY --from=builder --chown=app:app /app/.next/standalone ./
 COPY --from=builder --chown=app:app /app/.next/static ./.next/static
 COPY --from=builder --chown=app:app /app/prisma ./prisma
+COPY --from=builder --chown=app:app /app/prisma.config.ts ./prisma.config.ts
+COPY --from=builder --chown=app:app /app/tsconfig.json ./tsconfig.json
 COPY --from=builder --chown=app:app /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder --chown=app:app /app/node_modules/@prisma ./node_modules/@prisma
 COPY --from=builder --chown=app:app /app/node_modules/better-sqlite3 ./node_modules/better-sqlite3
 COPY --from=builder --chown=app:app /app/node_modules/@prisma/adapter-better-sqlite3 ./node_modules/@prisma/adapter-better-sqlite3
+COPY --from=builder --chown=app:app /app/node_modules/.bin/tsx ./node_modules/.bin/tsx
+COPY --from=builder --chown=app:app /app/node_modules/tsx ./node_modules/tsx
 
 USER app
 EXPOSE 3000
