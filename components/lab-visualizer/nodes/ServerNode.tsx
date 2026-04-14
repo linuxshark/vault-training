@@ -11,7 +11,7 @@ interface Data {
 }
 
 function Component({ data }: NodeProps) {
-  const d = data as Data;
+  const d = data as unknown as Data;
   return (
     <div
       className={cn(

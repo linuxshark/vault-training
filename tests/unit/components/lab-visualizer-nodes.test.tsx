@@ -17,6 +17,11 @@ const baseProps = {
   yPos: 0,
   zIndex: 0,
   dragging: false,
+  draggable: false,
+  selectable: true,
+  deletable: false,
+  positionAbsoluteX: 0,
+  positionAbsoluteY: 0,
   type: "custom",
 };
 
