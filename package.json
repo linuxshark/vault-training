@@ -65,6 +65,7 @@
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "@types/supertest": "^7.2.0",
+    "@vitejs/plugin-react": "^6.0.1",
     "@vitest/ui": "^4.1.4",
     "dotenv": "^17.4.1",
     "eslint": "^8",
