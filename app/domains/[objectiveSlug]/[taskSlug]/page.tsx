@@ -4,6 +4,7 @@ import { SidebarNav } from "@/components/sidebar-nav";
 import { StatusPill } from "@/components/status-pill";
 import { RightPanel } from "@/components/right-panel";
 import { TabSwitcher } from "@/components/tab-switcher";
+import { LabVisualizer } from "@/components/lab-visualizer/LabVisualizer";
 import { FooterNav } from "@/components/footer-nav";
 import { prisma } from "@/lib/prisma";
 import { loadTask } from "@/lib/content/loader";
@@ -86,6 +87,9 @@ export default async function TaskView({
           panels={{
             explained: explained?.content ?? null,
             notes: notes?.content ?? null,
+            visual: loaded.visualizerEnabled && loaded.labSteps
+              ? <LabVisualizer steps={loaded.labSteps} />
+              : null,
             notesEs: notesEs?.content ?? null,
             lab: lab?.content ?? null,
           }}
