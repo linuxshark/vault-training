@@ -82,7 +82,7 @@ export function VaultScene({
           id: `e-server-${eng}`,
           source: "server",
           target: eng,
-          animated: active.includes(eng),
+          animated: active.includes("server") && active.includes(eng),
         });
       });
     visible
@@ -92,7 +92,7 @@ export function VaultScene({
           id: `e-server-${auth}`,
           source: "server",
           target: auth,
-          animated: active.includes(auth),
+          animated: active.includes("server") && active.includes(auth),
         });
       });
     return list;
