@@ -44,7 +44,7 @@ vault status
 `;
     const steps = buildLabSteps(body);
     expect(steps).toHaveLength(1);
-    expect(steps[0].commands).toEqual(["vault status"]);
+    expect(steps[0]?.commands).toEqual(["vault status"]);
   });
 
   it("handles multi-line bash blocks", () => {
@@ -56,7 +56,7 @@ vault kv put secret/b y=2
 `;
     const steps = buildLabSteps(body);
     expect(steps).toHaveLength(1);
-    expect(steps[0].commands).toEqual([
+    expect(steps[0]?.commands).toEqual([
       "vault kv put secret/a x=1",
       "vault kv put secret/b y=2",
     ]);
@@ -71,7 +71,7 @@ vault kv put secret/foo bar=baz
 `;
     const steps = buildLabSteps(body);
     expect(steps).toHaveLength(1);
-    expect(new Set(steps[0].affects)).toEqual(
+    expect(new Set(steps[0]?.affects)).toEqual(
       new Set(["server", "auth:userpass", "client", "engine:kv"]),
     );
   });
@@ -88,8 +88,8 @@ EOF
 `;
     const steps = buildLabSteps(body);
     expect(steps).toHaveLength(1);
-    expect(steps[0].commands[0]).toMatch(/^vault kv put secret\/user/);
-    expect(steps[0].affects).toEqual(["client", "server", "engine:kv"]);
+    expect(steps[0]?.commands[0]).toMatch(/^vault kv put secret\/user/);
+    expect(steps[0]?.affects).toEqual(["client", "server", "engine:kv"]);
   });
 
   it("returns empty array when no bash blocks", () => {
@@ -106,6 +106,6 @@ vault login root
 \`\`\`
 `;
     const steps = buildLabSteps(body);
-    expect(steps[0].commands).toEqual(["vault status", "vault login root"]);
+    expect(steps[0]?.commands).toEqual(["vault status", "vault login root"]);
   });
 });
