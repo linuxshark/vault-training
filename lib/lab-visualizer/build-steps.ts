@@ -8,7 +8,12 @@ function stripHeredoc(block: string): string[] {
   const raw = block.split("\n");
   let i = 0;
   while (i < raw.length) {
-    const line = raw[i].trim();
+    const currentLine = raw[i];
+    if (!currentLine) {
+      i++;
+      continue;
+    }
+    const line = currentLine.trim();
     if (!line) {
       i++;
       continue;
@@ -17,8 +22,12 @@ function stripHeredoc(block: string): string[] {
     if (heredoc) {
       lines.push(line);
       const marker = heredoc[1];
+      if (!marker) {
+        i++;
+        continue;
+      }
       i++;
-      while (i < raw.length && raw[i].trim() !== marker) i++;
+      while (i < raw.length && raw[i]?.trim() !== marker) i++;
       i++;
     } else {
       lines.push(line);
@@ -39,6 +48,7 @@ export function buildLabSteps(body: string): LabStep[] {
   BASH_FENCE.lastIndex = 0;
   while ((match = BASH_FENCE.exec(body)) !== null) {
     const raw = match[1];
+    if (!raw) continue;
     const commands = stripHeredoc(raw);
     if (commands.length === 0) continue;
     const affects: NodeRef[] = unique(commands.flatMap((c) => parseCommand(c)));

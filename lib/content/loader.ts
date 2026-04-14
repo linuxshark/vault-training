@@ -2,6 +2,8 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import matter from "gray-matter";
 import { FrontmatterSchema, type Frontmatter } from "./frontmatter";
+import type { LabStep } from "@/lib/lab-visualizer/types";
+import { buildLabSteps } from "@/lib/lab-visualizer/build-steps";
 
 export interface ObjectiveIndex {
   id: string;
@@ -23,6 +25,8 @@ export interface LoadedTask {
   notes?: LoadedMdx;
   notesEs?: LoadedMdx;
   lab?: LoadedMdx;
+  labSteps?: LabStep[];
+  visualizerEnabled?: boolean;
   externalLinks: { label: string; url: string }[];
 }
 
@@ -65,6 +69,15 @@ export async function loadTask(objectiveId: string, taskSlug: string): Promise<L
 
   if (!explained && !notes && !lab) return null;
 
+  let labSteps: LabStep[] | undefined;
+  let visualizerEnabled = false;
+  if (lab) {
+    visualizerEnabled = Boolean(lab.frontmatter?.visualizer);
+    if (visualizerEnabled) {
+      labSteps = buildLabSteps(lab.body);
+    }
+  }
+
   const externalLinks: { label: string; url: string }[] = [];
   if (explained?.frontmatter.sourceUrl) {
     externalLinks.push({ label: "Tutorial oficial", url: explained.frontmatter.sourceUrl });
@@ -76,5 +89,5 @@ export async function loadTask(objectiveId: string, taskSlug: string): Promise<L
     externalLinks.push({ label: "Lab codespace", url: lab.frontmatter.sourceUrl });
   }
 
-  return { objectiveId, taskSlug, explained, notes, notesEs, lab, externalLinks };
+  return { objectiveId, taskSlug, explained, notes, notesEs, lab, labSteps, visualizerEnabled, externalLinks };
 }
