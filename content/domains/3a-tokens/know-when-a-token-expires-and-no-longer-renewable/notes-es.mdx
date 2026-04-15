@@ -1,0 +1,52 @@
+---
+objectiveId: "3a"
+taskSlug: "know-when-a-token-expires-and-no-longer-renewable"
+kind: "notes-es"
+title: "Leases"
+source: "ismet55555"
+sourceUrl: "https://github.com/ismet55555/Hashicorp-Certified-Vault-Associate-Notes/blob/main/README.md"
+license: "MIT"
+order: 2
+---
+
+- Controlar el ciclo de vida de secretos dinámicos
+- Los secretos dinámicos y tokens de servicio se crean con una concesión (lease)
+  - "Leases" son para secretos dinámicos
+  - "TTL" son para tokens de servicio
+- Puede renovar o revocar una concesión
+- Las concesiones no tienen comando CLI directo
+  - Use la ruta `/sys/leases/lookup`
+- Propiedades de la concesión
+  - `lease-id` - Identificador único para el secreto dinámico
+  - `lease_duration` - Cuánto tiempo más es válida esta concesión
+  - `lease_renewable` - ¿Se puede renovar esta concesión? (verdadero o falso)
+- `lease_duration` es esencialmente el TTL
+  - Tiene TTL por defecto
+  - TTL máximo
+  - Herencia de TTL
+    - Configuración del servidor vault a nivel de sistema
+    - Configuración específica del mount (cambiad con `tune`)
+    - Configuración específica del objeto para cada secreto dinámico
+- `lease_renewable` es si la concesión puede renovarse o no
+  - Se configura a nivel de objeto
+
+### Trabajar con concesiones
+
+- Renovar una concesión
+  - `vault lease renew [OPTIONS] LEASE_ID`
+  - **Ejemplo:** `vault lease renew -increment=30m consul/creds/web/KWq5lsjdsf89sfjsdfG`
+  - Debe ser menor que el TTL máximo
+- Revocar una concesión
+  - `vault lease revoke [OPTIONS] LEASE_ID`
+  - **Ejemplo:** `vault lease revoke consul/creds/web/KWq5lsjdsf89sfjsdfG`
+- Revocación por prefijo
+  - Revoca todas las concesiones con una ruta padre común
+  - Requiere privilegios elevados `sudo`/root
+  - `vault lease revoke -prefix consul/creds/web/`
+- Buscar concesiones activas
+  - `vault list [OPTIONS] sys/leases/lookup/PATH`
+  - **Ejemplo:** `vault list sys/leases/lookup/consul/creds/web/`
+- Ver propiedades de concesiones
+  - `vault write [OPTIONS] sys/leases/lookup/ lease_id=LEASE_ID`
+  - **Ejemplo:** `vault write sys/leases/lookup/ lease_id=consul/creds/web/KWq5lsjdsf89sfjsdfG`
+  - Tenga en cuenta que esta es una operación write/POST ya que estamos enviando datos como parte de la solicitud

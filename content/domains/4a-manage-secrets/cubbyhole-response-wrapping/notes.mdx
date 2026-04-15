@@ -1,0 +1,401 @@
+---
+objectiveId: "4a"
+taskSlug: "cubbyhole-response-wrapping"
+kind: "notes"
+title: "Secrets Engines"
+source: "ismet55555"
+sourceUrl: "https://github.com/ismet55555/Hashicorp-Certified-Vault-Associate-Notes/blob/main/README.md"
+license: "MIT"
+order: 2
+---
+
+**Docs:** https://www.vaultproject.io/docs/secrets
+
+- Plugins used by Vault to handle sensitive data
+- Store, generate, or encrypt data
+- Broad categories: **Dynamic** and **Static** secret engines
+- General Secrets engine categories:
+  - **Cloud** - AWS, Azure, GCP, etc.
+  - **Database** - MSSQL, PostgreSQL, MySQL, etc.
+  - **Internal** - Key/Value, Identity, Transit, etc.
+  - **Identity** - Active Directory, LDAP, etc.
+  - **Certificate** - SSH, PKI, etc.
+  - **Tokens** - Consul, Nomad
+- All engines are enabled on `/sys/mounts` path
+- When enabling, if no path is provided, it will default to the engine name
+  - **Example:** `vault secrets enable aws` is enabled and mounted on `/sys/mounts/aws`
+- Secrets engines can be moved
+  - **WARNING:** If moved, any existing leases will be revoked
+  - May impact policies (which are based on specified paths)
+- Engines can be tuned and configured
+  - Tuning settings are same for all secrets engines (ie. description, max lease TTL, etc.)
+  - Configuration settings are specific to the entire secrets engine
+
+> **Note:** Specific secret engine are not needed for the certification exam, only
+> how to generally use them.
+
+### Types of Secrets
+
+- **Static secrets**
+
+  - Store existing data securely
+  - You already have this data, and Vault needs to manage it, have access to it
+  - Manual lifecycle management
+  - Manually load new versions of secret to a secret engine
+  - **Example:**
+    - Key/Value (`kv`) secret engine can store some static value under some key
+
+- **Dynamic Secrets**
+  - Generated secrets data on demand
+  - _Lease_ issued for each secret (TTL) that can expire
+  - Automatic secrets lifecycle management
+  - Majority of secrets engines are dynamic in nature
+
+### Working with Secrets Engines
+
+- List existing secret engines
+  - `vault secrets list`
+  - `-detailed` for more information for each engine
+- Enable a new secrets engine
+  - `vault secrets enable [OPTIONS] TYPE`
+  - **Example:** Key-value version 2 secrets engine
+    - `vault secrets enable -version=2 kv`
+  - **Example:** Database secrets engine
+    - `vault secrets enable -path=CompanyData database`
+- Tune a secrets engine settings
+  - `vault secrets tune [OPTIONS] PATH`
+  - **Example:**
+    - `vault secrets tune -max-lease-ttl=72h kv`
+    - `vault secrets tune -description="Our cool database engine" CompanyData`
+- Move a secrets engine
+  - Will revoke all included leases
+  - Could mess up policy constraints
+  - `vault secrets move [OPTIONS] SOURCE DESTINATION`
+  - **Example:**
+    - `vault secrets move CompanyData CompanyDataPrivate`
+- Disable a secrets engine
+  - `vault secrets disable [OPTIONS] PATH`
+  - **Example:**
+    - `vault secrets disable CompanyData`
+- Show secret engine help
+  - `vault path-help /sys/mounts/<engine>`
+  - **Example:**
+    - `vault path-help /sys/mounts/CompanyData`
+
+### Response Wrapping
+
+**Docs:** https://www.vaultproject.io/docs/concepts/response-wrapping
+**Tutorial:** https://learn.hashicorp.com/tutorials/vault/cubbyhole-response-wrapping
+
+- Provides mechanism for information sharing between many environments
+- Vault takes response it would have sent to a client and inserts it into the `cubbyhole` with
+  a single-use token, returning that single-use token to the client instead
+- Response it wrapped by that `cubbyhole` token
+- Retrieving the actual data inside the `cubbyhole` requires an unwrap operation
+  - **CLI:** `vault unwrap <wrapping token>`
+  - **UI:** Tools > Unwrap > Enter token > Unwrap data
+- Response wrapping provides:
+  - Value transmitted is not the actual secret but a reference to the actual secret (response-wrapping token)
+  - Only a single party can unwrap the token and see what's inside
+  - Limits the lifetime of secret exposure. If client fails unwrap token, token can expire quickly
+- Wrapped token creation
+  - Use `-wrap-ttl=[DURATION]` option flag via CLI
+  - Use `X-Vault-Wrap-TTL` header via API
+- When a response wrap is requested ...
+  - **Single-use** token is generated
+  - Original response is stored in a single-use token's cubbyhole
+  - New response is returned with a single-use token
+
+> **NOTE:** The client does not have to authenticate to vault when trying to unwrap, gets instant
+> access to the secret for one time only
+
+**Using CLI**
+
+- Wrap a response of any command
+  - `vault command -wrap-ttl=[DURATION] PATH`
+  - The resulting token (`wrapping_token`) is passed to entity that needs to retrieve that wrapped response
+    **Example:** Create a secret, and wrap the output of the value for the specified key
+    - `vault kv put kv/some_data some_key=some_value`
+    - `vault kv get -wrap-ttl=1h kv/some_data`
+    - Output:
+      - ```text
+        Key                              Value
+        ---                              -----
+        wrapping_token:                  s.WWSuR0GwvjJgscyqS8rffAKL
+        wrapping_accessor:               XwhdoFsKzG2EEoyPQaYTZtj9
+        wrapping_token_ttl:              1h
+        wrapping_token_creation_time:    2022-01-21 22:28:21.2741588 +0000 UTC
+        wrapping_token_creation_path:    kv/data/some_data
+        ```
+- Unwrap using the issued wrap token
+    - `vault unwrap [OPTIONS] [TOKEN]`
+    - **Example:** Unwrap the previously wrapped response
+       - `vault unwrap -field=data -format=json s.WWSuR0GwvjJgscyqS8rffAKL`
+       - Output:
+           - ```json
+             { "some_key": "some_value" }
+              ```
+
+**Using API**
+
+Similar to CLI, but using the API in the following format:
+
+- Wrap a response of any command. Will result in a `wrapping_token`
+  - ```bash
+    curl --header "X-Vault-Wrap-TTL: <TTL>" \      # <-- NOTE
+        --header "X-Vault-Token: <TOKEN>" \
+        --request <HTTP_VERB> \
+        --data '<PARAMETERS>' \
+        <VAULT_ADDRESS>/v1/<ENDPOINT>
+    ```
+- Unwrap using the issued token
+  - ```bash
+    curl --header "X-Vault-Token: <WRAPPING TOKEN>" \
+        --request POST \
+        <VAULT_ADDRESS>/v1/sys/wrapping/unwrap
+    ```
+
+### Secrets Engine: Cubbyhole
+
+**Docs:** https://www.vaultproject.io/docs/secrets/cubbyhole
+
+- Stores arbitrary secrets within Vault, namespaced to a token
+- Paths are scoped per token
+- No token can access other token's cubbyhole path
+- Each cubby inside the cubby hole is created per service token
+- Cubby is only accessible by that token
+- Enabled by default
+- Cannot be disabled or moved
+- No versioning for secrets
+- **The root token has no access to the cubbyhole, only its token can access it**
+- Usage:
+  - Write: `vault write cubbyhole/my-secret my-value=s3cr3t`
+  - Read: `vault read cubbyhole/my-secret`
+  - API: Reading via curl
+    - ```bash
+      curl \
+      	--header "X-Vault-Token: <TOKEN HERE>" \
+      	http://127.0.0.1:8200/v1/cubbyhole/my-secret
+      ```
+
+### Secrets Engine: Identity
+
+**Docs:** https://www.vaultproject.io/docs/secrets/identity
+**Tutorial:** https://learn.hashicorp.com/tutorials/vault/identity
+
+- Maintains and keeps track of clients who are recognized by Vault
+- "Clients" are users or applications that have been authenticated by Vault
+- Identity engine tracks those clients internally within Vault
+- Enabled/Mounted by default
+- Cannot be disabled, moved, or duplicated
+- Cannot enable multiple instances/paths of the identity engines
+- Each client is a `Entity`
+  - Entry within the identity engine that represents a client
+- Any entity can have multiple `Aliases` (ways of authenticating)
+  - For example, a single user who has accounts in both GitHub and LDAP,
+    can be mapped to a single entity in Vault that has 2 aliases, one
+    of type GitHub and one of type LDAP.
+- Can place entities in different groups to manage policy assignments to entities
+- Internally maintains the clients who are recognized by Vault
+- Links identities to tokens
+- Hold entities, aliases, and groups
+- Can associate Vault policies to entities or groups
+  - Typical token policies are assigned and evaluated at creation and renewal time **(static)**
+  - Identity policies are assigned to entity or group, evaluated at each request **(dynamic)**:
+- Three main components
+  1. **Entity**
+      - Represents a client (user, machine, etc)
+      - Linked to a token
+      - Example: Create an entity
+        - `vault write identity/entity name=my_entity`
+  2. **Alias**
+      - Represents a way of authentication method objects (ie. aws, github, ldap, etc)
+      - Linked to an entity (or group)
+  3. **Group**
+      - Internally organized groups
+        - Vault internally created group
+        - Can contain other groups and entities
+      - Externally organized groups
+        - Auth methods such as LDAP, Okta, or GitHub
+        - Use aliases for membership
+      - Can have entities or other groups as members
+      - Can create a hierarchy of groups, with policy inheritance
+
+### Secret Engine: Database
+
+**Docs:** https://www.vaultproject.io/docs/secrets/databases
+
+- Credentials dynamically generated with the database itself
+- Credentials are short-lived
+- Applications/Services request credentials from vault, which in turn generates it through database
+- Also supports static roles, a 1-to-1 mapping between vault roles to username/password
+
+### Secret Engine: Key Value (KV)
+
+**Docs:** https://www.vaultproject.io/docs/secrets/kv
+
+There are two version of this engine
+
+- **Key Value Version 1**
+
+  - No versioning, last key wins
+  - Faster with fewer storage calls
+  - Deleted items are gone forever
+  - Can be upgraded to version 2
+  - Default version on creation
+
+- **Key Value Version 2**
+
+  - Versioning of past secrets
+  - Possibly less performant
+  - Deleted items and metadata retained, can be recovered
+  - Cannot be downgraded to version 1
+  - Can be specified at creation
+
+- Usage
+
+  - **Docs:**: https://www.vaultproject.io/docs/secrets/kv/kv-v2#usage
+  - Getting help: `vault kv --help`
+  - Create/Writing a secret:
+    - `vault kv put [OPTIONS] KEY [DATA KEY=VALUE]`
+    - **Example:** `vault kv put kv/apikeys/d101 token=1234567890`
+    - **Example:** `vault kv put kv/apikeys/d101 @some_file.txt`
+  - Read a secret:
+    - `vault kv get [OPTIONS] KEY`
+    - **Example:** `vault kv get -version=2 kv/apikeys/d101`
+    - **Example:** `vault kv get -field=token kv/apikeys/d101`
+    - **Example:** `vault kv get -format=json kv/apikeys/d101`
+  - Listing secrets:
+    - `vault kv list [OPTIONS] PATH`
+    - **Example:** `vault kv list kv/apikeys`
+  - Deleting a secret:
+    - `vault kv delete [OPTIONS] KEY`
+    - **Example:** `vault kv delete -versions=1 kv/apikeys/d101`
+  - Permanently destroy a secret:
+    - `vault kv destroy [OPTIONS] KEY`
+    - **Example:** `vault kv destroy kv/apikeys/d101`
+
+- Example using REST API:
+  - Note the `data` in the path
+    - ```bash
+      curl --header "X-Vault-Token: [VAULT TOKEN]" \
+            http://127.0.0.1:8200/v1/kv/data/apitokens/d102
+      ```
+  - Getting a specific version of the key value
+    - ```bash
+      curl --header "X-Vault-Token: [VAULT TOKEN]" \
+            http://127.0.0.1:8200/v1/kv/data/apitokens/d102?version=1
+      ```
+
+### Secret Engine: Transit
+
+**Docs:** https://www.vaultproject.io/docs/secrets/transit
+**Tutorial:** https://learn.hashicorp.com/tutorials/vault/eaas-transit
+
+- Provides **encryption as a service**
+- Doesn't store the data sent to this engine
+- Only the encrypted keys are stored
+- Supported actions:
+  - Encrypt and decrypt data
+  - Can sign and verify that data
+  - Generate hashes
+  - Create random bytes
+- Relieves burden of proper encryption/decryption
+- Encryption keys that it uses to perform all actions are maintained the Transit secrets engine
+- Default path is `transit/`
+- Operations
+  - Enable engine
+  - Add cryptographic keys
+  - View keys and versions
+  - Encrypt data with key
+  - Decrypt data with key
+  - Rotate and manage key versions
+- Cryptographic keys features
+  - Basic types: AES, ChaCha20, ED25519, ECDSA, RSA, etc.
+  - The key type determines the supported actions
+  - Convergent encryption
+    - Deterministic - Regardless of key version, the encryption value will always be the same
+    - Less secure - Bad actor can infer values, since it always resolves to the same output
+    - Kind of like a hash
+    - Not supported by all key types
+  - Key versioning
+    - Each key is a map of key versions
+    - Working set - All available versions of the key that vault can reference (in memory)
+    - Retired set - Keys stored in archive (not in memory)
+    - Versioning settings
+      - `min_decryption_version` - Minimum key version to decrypt data
+      - `min_encryption_version` - Minimum key version to encrypt data
+    - `rotate` - Add a new version
+    - `config` - Change version settings
+    - `trim` - Delete key permanently
+
+#### Working with Transit Engine
+
+- Enable the transit engine
+  - `vault secrets enable transit`
+- Create a new encryption key
+  - `vault write [-force] PATH/<KEY_NAME> [DATA] [PARAMETERS]`
+  - **Example:** Let Vault generate key `my_key` without given input
+    - `vault write -force transit/keys/my_key`
+- List encryption keys
+  - `vault list PATH`
+  - **Example:** List all keys 
+    - `vault list transit/keys`
+- Read key info
+  - `vault read PATH/<KEYNAME>`
+  - **Example:** Read key info
+    - `vault read transit/keys/my_key`
+- Rotate a key
+  - `vault write [-force] PATH/rotate [DATA]`
+  - **Example:** Rotate a key
+    - `vault write -force transit/keys/my_key/rotate`
+- Configure available key versions
+  - `vault write PATH/config/ [PARAMETERS]`
+  - **Example:** Change minimum decryption version available for use
+    - `vault write transit/keys/my_key/config min_decryption_version=4`
+- Remove older key versions
+  - `vault write PATH/trim [PARAMETERS]`
+  - **Example:** Remove all key versions before version 3 (delete versions 1, 2)
+    - `vault write transit/keys/my_key/trim min_available_version=3`
+- Generate a random number
+  - `vault write -force transit/random/[BYTES] format=[FORMAT]`
+  - Number of bytes could be `32`, `128`, etc
+  - `-format` can be `base64` or `hex`
+  - **Example:** Generate a random number of 32 bytes in base64 format
+    - `vault write -force transit/random/32 format=base64`
+- Encrypt plain text data with encryption key
+  - `vault write transit/encrypt/<KEY_NAME> plaintext=$(base64 <<< "TEXT")`
+  - **Note:** All submitted plaintext data must be base64 encoded
+  - If key version is not specified, the latest version will be used
+  - **Example:** Encrypt some text
+    - `vault write transit/encrypt/my-key plaintext=$(base64 <<< "my secret data")`
+    - Output:
+      - ```text
+        Key            Value
+        ---            -----
+        ciphertext     vault:v2:nKSQ9Ykv+CPCWfMSHA6tjgFOI2nunYMp00et0heBhtJH0wdnr90hO61fbw==
+        key_version    2
+        ```
+  - **Example:** Encrypt data and save the ciphertext in a variable
+    - Note the usage of JSON format and `jq` parser
+    - `json_data=$(vault write transit/encrypt/ccid plaintext=$(base64 <<< "my secret data") -format=json)`
+    - `ciphertext=$(echo $json_data | jq .data.ciphertext -r)`
+- Decrypt data
+    - `vault write transit/decrypt/<KEY_NAME> ciphertext="CIPHERTEXT"`
+    - Will return the decrypted plaintext in base64 encoding
+    - **Example:** Decrypt some ciphertext using the `ccid` key
+      - `vault write transit/decrypt/ccid ciphertext="vault:v2:nKSQ9Ykv+CPCWfMSHA6tjgFOI2nunYMp00et0heBhtJH0wdnr90hO61fbw=="`
+        - Output:
+          - ```text
+            Key          Value
+            ---          -----
+            plaintext    bXkgc2VjcmV0IGRhdGEK
+            ```
+      - `base64 --decode "bXkgc2VjcmV0IGRhdGEK"`
+        - Output:
+          - ```text
+            my secret data
+            ```
+    - **Example:** Decrypt data and get the plaintext
+      - `plaintext=$(vault write transit/decrypt/ccid ciphertext=$ciphertext -format=json | jq .data.plaintext -r)`
+      - `echo $plaintext | base64 --decode`

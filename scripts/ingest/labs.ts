@@ -17,6 +17,7 @@ interface LabMapping {
   objectiveId: string;
   taskSlug: string;
   title?: string;
+  visualizer?: boolean;
 }
 
 async function readLabMapping(): Promise<LabMapping[]> {
@@ -101,6 +102,7 @@ async function main() {
           sourceUrl: externalUrl,
           license: "Apache-2.0",
           order: 3,
+          ...(mapping.visualizer ? { visualizer: true } : {}),
         },
         blocksToBody(blocks, externalUrl, mapping.title ?? mapping.taskSlug),
       );

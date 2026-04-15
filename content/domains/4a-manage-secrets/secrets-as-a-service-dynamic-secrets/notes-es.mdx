@@ -1,0 +1,307 @@
+---
+objectiveId: "4a"
+taskSlug: "secrets-as-a-service-dynamic-secrets"
+kind: "notes-es"
+title: "Secrets Engines"
+source: "ismet55555"
+sourceUrl: "https://github.com/ismet55555/Hashicorp-Certified-Vault-Associate-Notes/blob/main/README.md"
+license: "MIT"
+order: 2
+---
+
+**Docs:** https://www.vaultproject.io/docs/secrets
+
+- Plugins utilizados por Vault para gestionar datos sensibles
+- Almacenar, generar o encriptar datos
+- Amplias categorías: motores de secretos **dinámicos** y **estáticos**
+- Categorías generales de motores de secretos:
+  - **Cloud** - AWS, Azure, GCP, etc.
+  - **Database** - MSSQL, PostgreSQL, MySQL, etc.
+  - **Internal** - Key/Value, Identity, Transit, etc.
+  - **Identity** - Active Directory, LDAP, etc.
+  - **Certificate** - SSH, PKI, etc.
+  - **Tokens** - Consul, Nomad
+- Todos los motores se habilitan en la ruta `/sys/mounts`
+- Al habilitar, si no se proporciona una ruta, se usará por defecto el nombre del motor
+  - **Ejemplo:** `vault secrets enable aws` se habilita y monta en `/sys/mounts/aws`
+- Los motores de secretos se pueden mover
+  - **ADVERTENCIA:** Si se mueven, se revocarán todas las concesiones existentes
+  - Puede afectar las políticas (que se basan en rutas especificadas)
+- Los motores se pueden ajustar y configurar
+  - La configuración de ajuste es la misma para todos los motores de secretos (p. ej., descripción, TTL máximo de concesión, etc.)
+  - La configuración es específica para todo el motor de secretos
+
+> **Nota:** Los motores de secretos específicos no son necesarios para el examen de certificación, solo cómo usarlos en general.
+
+### Tipos de Secretos
+
+- **Secretos estáticos**
+
+  - Almacenar datos existentes de forma segura
+  - Ya tienes estos datos, y Vault necesita gestionarlos y acceder a ellos
+  - Gestión manual del ciclo de vida
+  - Cargar manualmente nuevas versiones del secreto en un motor de secretos
+  - **Ejemplo:**
+    - El motor de secretos Key/Value (`kv`) puede almacenar un valor estático bajo una clave
+
+- **Secretos dinámicos**
+  - Generar datos de secretos bajo demanda
+  - _Concesión_ emitida para cada secreto (TTL) que puede expirar
+  - Gestión automática del ciclo de vida de secretos
+  - La mayoría de los motores de secretos son de naturaleza dinámica
+
+### Trabajar con Motores de Secretos
+
+- Listar motores de secretos existentes
+  - `vault secrets list`
+  - `-detailed` para obtener más información de cada motor
+- Habilitar un nuevo motor de secretos
+  - `vault secrets enable [OPTIONS] TYPE`
+  - **Ejemplo:** Motor de secretos Key-value versión 2
+    - `vault secrets enable -version=2 kv`
+  - **Ejemplo:** Motor de secretos de base de datos
+    - `vault secrets enable -path=CompanyData database`
+- Ajustar la configuración de un motor de secretos
+  - `vault secrets tune [OPTIONS] PATH`
+  - **Ejemplo:**
+    - `vault secrets tune -max-lease-ttl=72h kv`
+    - `vault secrets tune -description="Our cool database engine" CompanyData`
+- Mover un motor de secretos
+  - Revocará todas las concesiones incluidas
+  - Podría afectar las restricciones de políticas
+  - `vault secrets move [OPTIONS] SOURCE DESTINATION`
+  - **Ejemplo:**
+    - `vault secrets move CompanyData CompanyDataPrivate`
+- Deshabilitar un motor de secretos
+  - `vault secrets disable [OPTIONS] PATH`
+  - **Ejemplo:**
+    - `vault secrets disable CompanyData`
+- Mostrar ayuda del motor de secretos
+  - `vault path-help /sys/mounts/<engine>`
+  - **Ejemplo:**
+    - `vault path-help /sys/mounts/CompanyData`
+
+### Response Wrapping
+
+**Docs:** https://www.vaultproject.io/docs/concepts/response-wrapping
+**Tutorial:** https://learn.hashicorp.com/tutorials/vault/cubbyhole-response-wrapping
+
+- Proporciona un mecanismo para compartir información entre muchos entornos
+- Vault toma la respuesta que habría enviado a un cliente e la inserta en `cubbyhole` con un token de un solo uso, devolviendo ese token de un solo uso al cliente en su lugar
+- La respuesta se envuelve mediante ese token de `cubbyhole`
+- Recuperar los datos reales dentro de `cubbyhole` requiere una operación de desenvuelto
+  - **CLI:** `vault unwrap <wrapping token>`
+  - **UI:** Tools > Unwrap > Ingresar token > Unwrap data
+- Response wrapping proporciona:
+  - El valor transmitido no es el secreto real sino una referencia al secreto real (token de response wrapping)
+  - Solo una parte puede desenvolver el token y ver qué hay dentro
+  - Limita la vida útil de la exposición del secreto. Si el cliente falla al desenvolver el token, el token puede expirar rápidamente
+- Creación de token envuelto
+  - Usar la opción `-wrap-ttl=[DURATION]` mediante CLI
+  - Usar el encabezado `X-Vault-Wrap-TTL` mediante API
+- Cuando se solicita un response wrap ...
+  - Se genera un token de **un solo uso**
+  - La respuesta original se almacena en el cubbyhole del token de un solo uso
+  - Se devuelve una nueva respuesta con un token de un solo uso
+
+> **NOTA:** El cliente no necesita autenticarse en vault al intentar desenvolver, obtiene acceso instantáneo al secreto una sola vez
+
+**Usando CLI**
+
+- Envolver la respuesta de cualquier comando
+  - `vault command -wrap-ttl=[DURATION] PATH`
+  - El token resultante (`wrapping_token`) se pasa a la entidad que necesita recuperar esa respuesta envuelta
+    **Ejemplo:** Crear un secreto y envolver la salida del valor para la clave especificada
+    - `vault kv put kv/some_data some_key=some_value`
+    - `vault kv get -wrap-ttl=1h kv/some_data`
+    - Salida:
+      - ```text
+        Key                              Value
+        ---                              -----
+        wrapping_token:                  s.WWSuR0GwvjJgscyqS8rffAKL
+        wrapping_accessor:               XwhdoFsKzG2EEoyPQaYTZtj9
+        wrapping_token_ttl:              1h
+        wrapping_token_creation_time:    2022-01-21 22:28:21.2741588 +0000 UTC
+        wrapping_token_creation_path:    kv/data/some_data
+        ```
+- Desenvolver utilizando el token de envuelto emitido
+    - `vault unwrap [OPTIONS] [TOKEN]`
+    - **Ejemplo:** Desenvolver la respuesta previamente envuelta
+       - `vault unwrap -field=data -format=json s.WWSuR0GwvjJgscyqS8rffAKL`
+       - Salida:
+           - ```json
+             { "some_key": "some_value" }
+              ```
+
+**Usando API**
+
+Similar a CLI, pero utilizando la API en el siguiente formato:
+
+- Envolver la respuesta de cualquier comando. Resultará en un `wrapping_token`
+  - ```bash
+    curl --header "X-Vault-Wrap-TTL: <TTL>" \      # <-- NOTA
+        --header "X-Vault-Token: <TOKEN>" \
+        --request <HTTP_VERB> \
+        --data '<PARAMETERS>' \
+        <VAULT_ADDRESS>/v1/<ENDPOINT>
+    ```
+- Desenvolver utilizando el token emitido
+  - ```bash
+    curl --header "X-Vault-Token: <WRAPPING TOKEN>" \
+        --request POST \
+        <VAULT_ADDRESS>/v1/sys/wrapping/unwrap
+    ```
+
+### Motor de Secretos: Cubbyhole
+
+**Docs:** https://www.vaultproject.io/docs/secrets/cubbyhole
+
+- Almacena secretos arbitrarios dentro de Vault, delimitado por token
+- Las rutas se limitan por token
+- Ningún token puede acceder al cubbyhole de otro token
+- Cada compartimiento dentro del cubbyhole se crea por token de servicio
+- El compartimiento solo es accesible por ese token
+- Habilitado por defecto
+- No se puede deshabilitar ni mover
+- Sin versioning para secretos
+- **El token raíz no tiene acceso al cubbyhole, solo su token puede acceder**
+- Uso:
+  - Escribir: `vault write cubbyhole/my-secret my-value=s3cr3t`
+  - Leer: `vault read cubbyhole/my-secret`
+  - API: Lectura mediante curl
+    - ```bash
+      curl \
+      	--header "X-Vault-Token: <TOKEN HERE>" \
+      	http://127.0.0.1:8200/v1/cubbyhole/my-secret
+      ```
+
+### Motor de Secretos: Identity
+
+**Docs:** https://www.vaultproject.io/docs/secrets/identity
+**Tutorial:** https://learn.hashicorp.com/tutorials/vault/identity
+
+- Mantiene y registra un seguimiento de los clientes reconocidos por Vault
+- Los "clientes" son usuarios o aplicaciones que han sido autenticados por Vault
+- El motor de identidad rastrea esos clientes internamente dentro de Vault
+- Habilitado/Montado por defecto
+- No se puede deshabilitar, mover o duplicar
+- No se pueden habilitar múltiples instancias/rutas de los motores de identidad
+- Cada cliente es una `Entity`
+  - Entrada dentro del motor de identidad que representa un cliente
+- Cualquier entidad puede tener múltiples `Aliases` (formas de autenticarse)
+  - Por ejemplo, un usuario único que tiene cuentas en GitHub y LDAP,
+    se puede mapear a una única entidad en Vault que tiene 2 aliases, uno
+    de tipo GitHub y otro de tipo LDAP.
+- Se pueden colocar entidades en diferentes grupos para gestionar asignaciones de políticas a entidades
+- Mantiene internamente los clientes reconocidos por Vault
+- Vincula identidades a tokens
+- Contiene entidades, aliases y grupos
+- Se pueden asociar políticas de Vault a entidades o grupos
+  - Las políticas de token típicas se asignan y evalúan en tiempo de creación y renovación **(estático)**
+  - Las políticas de identidad se asignan a entidad o grupo, evaluadas en cada solicitud **(dinámico)**:
+- Tres componentes principales
+  1. **Entity**
+      - Representa un cliente (usuario, máquina, etc)
+      - Vinculada a un token
+      - Ejemplo: Crear una entidad
+        - `vault write identity/entity name=my_entity`
+  2. **Alias**
+      - Representa una forma de objetos del método de autenticación (p. ej., aws, github, ldap, etc)
+      - Vinculado a una entidad (o grupo)
+  3. **Group**
+      - Grupos organizados internamente
+        - Grupo creado internamente por Vault
+        - Puede contener otros grupos y entidades
+      - Grupos organizados externamente
+        - Métodos de autenticación como LDAP, Okta o GitHub
+        - Utilizar aliases para membresía
+      - Puede tener entidades u otros grupos como miembros
+      - Se puede crear una jerarquía de grupos, con herencia de políticas
+
+### Motor de Secretos: Database
+
+**Docs:** https://www.vaultproject.io/docs/secrets/databases
+
+- Las credenciales se generan dinámicamente con la propia base de datos
+- Las credenciales tienen corta duración
+- Las aplicaciones/servicios solicitan credenciales de vault, que a su vez las genera a través de la base de datos
+- También admite roles estáticos, un mapeo 1:1 entre roles de vault y nombre de usuario/contraseña
+
+### Motor de Secretos: Key Value (KV)
+
+**Docs:** https://www.vaultproject.io/docs/secrets/kv
+
+Hay dos versiones de este motor
+
+- **Key Value Versión 1**
+
+  - Sin versioning, la última clave gana
+  - Más rápido con menos llamadas de almacenamiento
+  - Los elementos eliminados desaparecen para siempre
+  - Se puede actualizar a versión 2
+  - Versión predeterminada en la creación
+
+- **Key Value Versión 2**
+
+  - Versioning de secretos anteriores
+  - Posiblemente menos eficiente
+  - Los elementos eliminados y los metadatos se retienen, se pueden recuperar
+  - No se puede degradar a versión 1
+  - Se puede especificar en la creación
+
+- Uso
+
+  - **Docs:**: https://www.vaultproject.io/docs/secrets/kv/kv-v2#usage
+  - Obtener ayuda: `vault kv --help`
+  - Crear/escribir un secreto:
+    - `vault kv put [OPTIONS] KEY [DATA KEY=VALUE]`
+    - **Ejemplo:** `vault kv put kv/apikeys/d101 token=1234567890`
+    - **Ejemplo:** `vault kv put kv/apikeys/d101 @some_file.txt`
+  - Leer un secreto:
+    - `vault kv get [OPTIONS] KEY`
+    - **Ejemplo:** `vault kv get -version=2 kv/apikeys/d101`
+    - **Ejemplo:** `vault kv get -field=token kv/apikeys/d101`
+    - **Ejemplo:** `vault kv get -format=json kv/apikeys/d101`
+  - Listar secretos:
+    - `vault kv list [OPTIONS] PATH`
+    - **Ejemplo:** `vault kv list kv/apikeys`
+  - Eliminar un secreto:
+    - `vault kv delete [OPTIONS] KEY`
+    - **Ejemplo:** `vault kv delete -versions=1 kv/apikeys/d101`
+  - Destruir permanentemente un secreto:
+    - `vault kv destroy [OPTIONS] KEY`
+    - **Ejemplo:** `vault kv destroy kv/apikeys/d101`
+
+- Ejemplo usando REST API:
+  - Nota el `data` en la ruta
+    - ```bash
+      curl --header "X-Vault-Token: [VAULT TOKEN]" \
+            http://127.0.0.1:8200/v1/kv/data/apitokens/d102
+      ```
+  - Obtener una versión específica de la clave value
+    - ```bash
+      curl --header "X-Vault-Token: [VAULT TOKEN]" \
+            http://127.0.0.1:8200/v1/kv/data/apitokens/d102?version=1
+      ```
+
+### Motor de Secretos: Transit
+
+**Docs:** https://www.vaultproject.io/docs/secrets/transit
+**Tutorial:** https://learn.hashicorp.com/tutorials/vault/eaas-transit
+
+- Proporciona **cifrado como servicio**
+- No almacena los datos enviados a este motor
+- Solo se almacenan las claves cifradas
+- Acciones admitidas:
+  - Encriptar y desencriptar datos
+  - Puede firmar y verificar que los datos
+  - Generar hashes
+  - Crear bytes aleatorios
+- Alivia la carga de cifrado/descifrado adecuado
+- Las claves de encriptación que utiliza para realizar todas las acciones se mantienen en el motor de secretos Transit
+- La ruta predeterminada es `transit/`
+- Operaciones
+  - Habilitar motor
+  - Agregar claves criptográficas
+  - Ver claves y versiones
+  - Encriptar

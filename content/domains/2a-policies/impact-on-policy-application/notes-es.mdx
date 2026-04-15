@@ -1,0 +1,268 @@
+---
+objectiveId: "2a"
+taskSlug: "impact-on-policy-application"
+kind: "notes-es"
+title: "Vault Policies"
+source: "ismet55555"
+sourceUrl: "https://github.com/ismet55555/Hashicorp-Certified-Vault-Associate-Notes/blob/main/README.md"
+license: "MIT"
+order: 2
+---
+
+**Docs:** https://www.vaultproject.io/docs/concepts/policies
+
+- Como todo, las políticas se basan en rutas
+- Otorgan o prohíben el acceso a determinadas rutas y operaciones/capacidades (lo que puedes hacer en Vault)
+- Todas las políticas son `deny` por defecto (Política vacía)
+- Las políticas se asignan/adjuntan a tokens, identidades o métodos de autenticación
+- Define permisos (es decir, Listas de Control de Acceso (ACL))
+- **No hay versionado interno de políticas**
+  - Por ahora, tienes que versionar y/o hacer copia de seguridad de las iteraciones de políticas de otra forma
+  - Potencialmente usa `git` para control de versiones
+
+### Política `root`
+
+- Puede hacer CUALQUIER COSA en vault
+- ¡Ten cuidado con quién asignas esta política!
+- No puede ser eliminada ni modificada
+
+### Política `default`
+
+Esta política se adjunta automáticamente a todos los tokens.
+La política `default` adjunta a un token permite lo siguiente:
+
+- la política `default` no puede ser eliminada
+
+- Buscar sus propias propiedades
+  - ```hcl
+    path "auth/token/lookup-self" { ... }
+    ```
+- Renovarse a sí mismo
+  - ```hcl
+    path "auth/token/renew-self" { ... }
+    ```
+- Revocarse a sí mismo
+  - ```hcl
+    path "auth/token/revoke-self" { ... }
+    ```
+- Buscar sus propias capacidades en una ruta
+  - ```hcl
+    path "sys/capabilities-self" { ... }
+    ```
+- Buscar su propia entidad por id o nombre (usando plantilla de política)
+  - ```hcl
+    path "identity/entity/id/{{identity.entity.id}}" { ... }
+    ```
+
+### Sintaxis de Política
+
+**Docs:** https://www.vaultproject.io/docs/concepts/policies#policy-syntax
+
+- Las políticas se definen en **H**ashiCorp **C**onfiguration **L**anguage (HCL) _(preferido)_ o JSON
+- _Ruta de Política_ - Dónde y a qué se aplica la política
+- _Capacidades de Política_ - Qué acciones están permitidas
+- Expresión de ruta básica: `path "some-path/in/vault"`
+- Dos caracteres comodín están disponibles para expresiones de ruta:
+  1.  **Glob: `*`**
+      - Siempre se añade al _FINAL_ de una expresión de ruta
+      - Esto debe coincidir con la extensión de la ruta (Nota: Esto no es RegEx)
+      - **Ejemplo:** `path "some-path/*"`
+        - Evaluado como `path "some-path/something"` y `path "some-path/something/else"`
+  2.  **Segmento: `+`**
+      - Siempre se añade _DENTRO_ de una ruta
+      - Esto debe coincidir con cualquier número de caracteres para un segmento de ruta
+      - **Ejemplo:** `path "secrets/+/blah"`
+        - Evaluado como `path "secrets/something/blah"` y `path "secrets/else/blah"`
+- Nota: A menos que se especifiquen caracteres comodín, la expresión es solo para la ruta específica
+    - `"secret/foo"` solo se dirigiría a `secret/foo`, y nada bajo ella
+    - `"secret/foo/*"` se dirigiría a todo bajo `secret/foo` pero no a `secret/foo` misma
+- La capacidad `list` permite ver en la interfaz de usuario
+
+#### Ejemplos
+
+- **Ejemplo** Otorgar acceso de `read` solo al secreto `secret/foo`
+  - ```hcl
+    path "secret/foo" {
+    	capabilities = ["read", "list"]
+    }
+    ```
+- El comodín `*` se dirige a todas las rutas posteriores
+  - **Ejemplo** Otorgar acceso de `read` y `list` a todos los secretos
+  - ```hcl
+    path "secret/*" {
+    	capabilities = ["read", "list"]
+    }
+    ```
+- Ten en cuenta que cualquier subruta puede ser anulada configurando una política:
+  - ```hcl
+    path "secret/super-secret" {
+    	capabilities = ["deny"]
+    }
+    ```
+- Las reglas de políticas pueden configurarse para permitir, no permitir o requerir parámetros de política
+  - **Ejemplo** `secret/restricted` solo puede contener cualquier valor para `foo`, y valores `zip` o `zap` para `bar`
+  - ```hcl
+    path "secret/restricted" {
+    	capabilities = ["create"]
+    	allowed_parameters = {
+    		"foo" = []              # <-- Permite cualquier valor para foo
+    		"bar" = ["zip", "zap"]  # <-- Permite valores `zip` o `zap` para bar
+    	}
+    }
+    ```
+- Puedes usar patrones "glob" (`*`) / comodín para coincidir con rutas posteriores
+  - Nota: esto no incluye la ruta antes del `*`
+  - **Ejemplo** `secret/foo/*` puede coincidir con `secret/foo/bar` o incluso `secret/foo/bar/baz/blah`
+  - ```hcl
+    path "secret/foo/*" {               #<-- No se aplica a secret/foo
+    	capabilities = ["read", "list"]
+    }
+    ```
+- Para cualquier número de caracteres que estén limitados dentro de un único segmento de ruta, usa `+`
+  - **Ejemplo** Permitir lectura de `secret/foo/bar/teamB`, `secret/bar/foo/teamB`, etc.
+  - ```hcl
+    path "secret/+/+/teamB" {
+    	capabilities = ["read"]
+    }
+    ```
+
+### Políticas Templadas (Parámetros Dinámicos)
+
+**Docs:** https://www.vaultproject.io/docs/concepts/policies#templated-policies
+
+- Forma dinámica de definir rutas en políticas
+- Se usan dentro de los archivos de política
+- Usando `{{ }}` para que el intérprete de vault sepa que estás añadiendo un parámetro, luego añade la ruta al parámetro
+  - **Ejemplo:** Insertar el nombre de la entidad para definir una política
+    - ```hcl
+      path "secret/{{identity.entity.name}}/*" { ... }
+      ```
+  - **Ejemplo:** Usar el id de la entidad para definir una política
+    - ```hcl
+      path "secret/{{identity.entity.id}}/*" { ... }
+      ```
+- **NOTA:** Actualmente, la única fuente de parámetros es el secretos engine `identity`
+  - **`identity.entity`** - `id`, `name`, `metadata`, `aliases`
+  - **`identity.groups`** - `ids`, `names`
+
+### Capacidades de Política
+
+**Docs:** https://www.vaultproject.io/docs/concepts/policies#capabilities
+
+- Sigue semántica CRUD (**C**reate, **R**ead, **U**pdate, **D**elete)
+
+  - `create` - Crear datos en la ruta dada (similar a `update`) _(solicitud REST `POST/PUT`)_
+  - `read` - Leer datos en la ruta dada _(solicitud REST `GET`)_
+  - `update` - Cambiar datos en la ruta dada _(solicitud REST `POST/PUT`)_
+  - `delete` - Eliminar datos en la ruta dada _(solicitud REST `DELETE`)_
+
+- Capacidades adicionales:
+  - `list`
+    - Listar datos en la ruta dada
+    - Sin acceso a datos de clave (solicitud REST `LIST`)
+    - Permite ver en la interfaz de usuario web de Vault
+  - `sudo` - Dar al titular del token acceso a rutas que están _protegidas por raíz_
+  - `deny` - Prohibir el acceso a la ruta o patrón de ruta dado. Anula cualquier otra acción de permitir
+
+### Reglas de Evaluación de Política
+
+- Las políticas que Vault aplica a los tokens se determinan por la coincidencia más específica disponible
+  - **Ejemplo:** `secret/foo/bar` es más específica que `secret/*`
+- Si el mismo patrón de ruta de política aparece en múltiples políticas, se toma la unión de ambas
+  - **Ejemplo:** Combinar `[read, list]` con `[create]` es `[read, list, create]`
+- Si patrones diferentes aparecen en múltiples políticas, se toma el de mayor precedencia
+
+### Trabajar con Políticas
+
+- Listar políticas existentes
+  - `vault policy list`
+  - `vault read /sys/policy`
+- Leer el contenido de una política
+  - `vault policy read [OPTIONS] [POLICY NAME]`
+    - **Ejemplo:** `vault policy read secrets-mgmt`
+  - `vault read sys/policy/[POLICY NAME]`
+- *Escribir* una nueva política o *actualizar* una política existente
+  - Usando un archivo: `vault policy write [OPTIONS] [POLICY NAME] [POLICY FILE]`
+    - **Ejemplo:** `vault policy write secrets-mgmt policy.hcl`
+  - Usando entrada estándar: `vault policy write [OPTIONS] [POLICY NAME] -`
+    - **Ejemplo:** `cat policy.hcl | vault policy write secrets-mgmt -`
+- Eliminar una política
+  - `vault policy delete [OPTIONS] [POLICY NAME]`
+    - **Ejemplo:** `vault policy delete secrets-mgmt`
+- Formatear la política (hacer la sintaxis más legible)
+  - `vault policy fmt [OPTIONS] [POLICY FILE]`
+    - **Ejemplo:** `vault policy fmt policy.hcl`
+
+### Asignación de Políticas
+
+Aquí la política ya tiene que estar creada y activa en Vault para ser asignada.
+
+1. Asociar la política directamente con un token en la creación del token
+   - **Ejemplo:** `vault token create -policy=secrets-mgmt`
+2. Asignar política a un usuario en userpass
+   - **Ejemplo:** `vault write auth/userpass/users/ismet token_policies="secrets-mgmt"`
+3. Asignar política a una entidad en el secrets engine de identidad
+   - **Ejemplo:** `vault write identity/entity/name/ismet policies="secrets-mgmt"`
+
+### Restricciones de Parámetro
+
+**Docs:** https://www.vaultproject.io/docs/concepts/policies#fine-grained-control
+
+1. `required_parameters` - Lista de parámetros que deben estar configurados
+   - **Ejemplo**: Requiere que los usuarios creen subelementos dentro de `secret/foo` con `bar` y `baz`
+     - ```hcl
+       path "secret/foo" {
+       	capabilities = ["create"]
+       	required_parameters = ["bar", "baz"]
+       }
+       ```
+2. `allowed_parameters` - Claves y valores permitidos en la ruta dada
+
+   - **Ejemplo**: Permite a los usuarios crear `secret/foo` con SOLO `bar`, con `bar` conteniendo CUALQUIER valor
+     - ```hcl
+       path "secret/foo" {
+       	capabilities = ["create"]
+       	allowed_parameters = {
+       		"bar" = []
+       	}
+       }
+       ```
+   - **Ejemplo**: Permite a los usuarios crear `secret/foo` con SOLO `bar`, con `bar` conteniendo SOLO `zip` y `zap`
+     - ```hcl
+       path "secret/foo" {
+       	capabilities = ["create"]
+       	allowed_parameters = {
+       		"bar" = ["zip", "zap"]
+       	}
+       }
+       ```
+   - **Ejemplo**: Permite a los usuarios crear `secret/foo` con cualquier clave y valor, pero si el usuario crea `bar`, debe ser `zip` o `zap`
+     - ```hcl
+       path "secret/foo" {
+       	capabilities = ["create"]
+       	allowed_parameters = {
+       		"bar" = ["zip", "zap"]
+       		"*" = []
+       	}
+       }
+       ```
+
+3. `denied_parameters` - Lista negra de parámetros y valores (Anula `allowed_parameters`)
+   - **Ejemplo**: Permite a los usuarios crear `secret/foo` con cualquier parámetro pero no llamado `bar`
+     - ```hcl
+       path "secret/foo" {
+       	capabilities = ["create"]
+       	denied_parameters = {
+       		"bar" = []
+       	}
+       }
+       ```
+   - **Ejemplo**: Permite a los usuarios crear `secret/foo` con parámetro llamado `bar`, que no puede contener `zip` o `zap`
+     - ```hcl
+       path "secret/foo" {
+       	capabilities = ["create"]
+       	denied_parameters = {
+       		"bar" = ["zip", "zap"]
+       	}
+       }
+       ```
