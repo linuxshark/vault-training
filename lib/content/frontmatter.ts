@@ -16,6 +16,8 @@ export const FrontmatterSchema = z.object({
   license: z.string().min(1),
   order: z.number().int().nonnegative(),
   estMinutes: z.number().int().positive().optional(),
+  visualizer: z.boolean().optional(),
+  visualizerSpeed: z.number().positive().optional(),
 });
 
 export type Frontmatter = z.infer<typeof FrontmatterSchema>;

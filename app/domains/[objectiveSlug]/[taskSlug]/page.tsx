@@ -4,6 +4,7 @@ import { SidebarNav } from "@/components/sidebar-nav";
 import { StatusPill } from "@/components/status-pill";
 import { RightPanel } from "@/components/right-panel";
 import { TabSwitcher } from "@/components/tab-switcher";
+import { LabVisualizer } from "@/components/lab-visualizer/LabVisualizer";
 import { FooterNav } from "@/components/footer-nav";
 import { prisma } from "@/lib/prisma";
 import { loadTask } from "@/lib/content/loader";
@@ -65,20 +66,22 @@ export default async function TaskView({
         />
       }
     >
-      <article className="mx-auto max-w-3xl space-y-4">
-        <nav className="text-xs text-text-dim">
-          <span>{objective.title}</span>
-          <span className="mx-1.5 text-text-dim/50">/</span>
-          <span className="text-text-muted">{title}</span>
-        </nav>
-        <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
-        <div className="flex items-center gap-3">
-          <StatusPill status={progress?.status ?? "NOT_STARTED"} />
-          {loaded.explained?.frontmatter.estMinutes && (
-            <span className="text-xs text-text-muted">
-              est. {loaded.explained.frontmatter.estMinutes} min
-            </span>
-          )}
+      <div className="space-y-4">
+        <div className="mx-auto max-w-3xl space-y-4">
+          <nav className="text-xs text-text-dim">
+            <span>{objective.title}</span>
+            <span className="mx-1.5 text-text-dim/50">/</span>
+            <span className="text-text-muted">{title}</span>
+          </nav>
+          <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
+          <div className="flex items-center gap-3">
+            <StatusPill status={progress?.status ?? "NOT_STARTED"} />
+            {loaded.explained?.frontmatter.estMinutes && (
+              <span className="text-xs text-text-muted">
+                est. {loaded.explained.frontmatter.estMinutes} min
+              </span>
+            )}
+          </div>
         </div>
         <TabSwitcher
           taskId={taskId}
@@ -86,17 +89,22 @@ export default async function TaskView({
           panels={{
             explained: explained?.content ?? null,
             notes: notes?.content ?? null,
+            visual: loaded.visualizerEnabled && loaded.labSteps
+              ? <LabVisualizer steps={loaded.labSteps} />
+              : null,
             notesEs: notesEs?.content ?? null,
             lab: lab?.content ?? null,
           }}
         />
-        <FooterNav
-          prevHref={prev ? `/domains/${objective.slug}/${prev.slug}` : null}
-          prevLabel={prev?.title ?? null}
-          nextHref={next ? `/domains/${objective.slug}/${next.slug}` : null}
-          nextLabel={next?.title ?? null}
-        />
-      </article>
+        <div className="mx-auto max-w-3xl">
+          <FooterNav
+            prevHref={prev ? `/domains/${objective.slug}/${prev.slug}` : null}
+            prevLabel={prev?.title ?? null}
+            nextHref={next ? `/domains/${objective.slug}/${next.slug}` : null}
+            nextLabel={next?.title ?? null}
+          />
+        </div>
+      </div>
     </AppShell>
   );
 }

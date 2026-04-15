@@ -87,3 +87,4 @@ mappings:
     objectiveId: "1a"
     taskSlug: "vault-cli-to-configure-auth-methods"
     title: "Intro to Vault Lab"
+    visualizer: true

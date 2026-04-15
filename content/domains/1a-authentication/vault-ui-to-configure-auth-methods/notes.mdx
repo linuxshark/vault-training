@@ -1,0 +1,23 @@
+---
+objectiveId: "1a"
+taskSlug: "vault-ui-to-configure-auth-methods"
+kind: "notes"
+title: "Vault UI"
+source: "ismet55555"
+sourceUrl: "https://github.com/ismet55555/Hashicorp-Certified-Vault-Associate-Notes/blob/main/README.md"
+license: "MIT"
+order: 2
+---
+
+- Uses API on backend (as everything else that interacts with vault)
+- Not enabled by default, must turn on in vault configuration file
+    - `ui = true`
+- Runs on the same port as API (Port `8200`)
+- Includes a basic console within the UI for basic vault commands
+- Getting to the UI
+  1. Navigate web browser to `<VAULT HOST>:<PORT>/ui`
+     - **Example:**
+        - Local vault server: http://127.0.0.1:8200/ui
+        - Remote vault server: https://vault.example.com:8200/ui
+  2. Enter your token for access
+- Can copy current token (top right icon)

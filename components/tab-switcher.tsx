@@ -4,10 +4,11 @@ import { StatusPill } from "./status-pill";
 import type { Status } from "@prisma/client";
 import { cn } from "@/lib/utils";
 
-type TabKey = "explained" | "notes" | "lab";
+type TabKey = "explained" | "notes" | "visual" | "lab";
 const TAB_LABELS: Record<TabKey, string> = {
   explained: "Explicación sencilla",
   notes: "Notas técnicas",
+  visual: "Lab visual",
   lab: "Lab",
 };
 
@@ -31,7 +32,8 @@ export function TabSwitcher({
         return;
       if (e.key === "1" && panels.explained) setActive("explained");
       else if (e.key === "2" && panels.notes) setActive("notes");
-      else if (e.key === "3" && panels.lab) setActive("lab");
+      else if (e.key === "3" && panels.visual) setActive("visual");
+      else if (e.key === "4" && panels.lab) setActive("lab");
       else if (e.key === "m") void advance("REVIEWED");
     };
     window.addEventListener("keydown", handler);
@@ -99,7 +101,10 @@ export function TabSwitcher({
           <StatusPill status={status} onClick={() => void advance(nextStatus(status))} />
         </div>
       </div>
-      <div className="prose prose-invert prose-headings:font-semibold prose-code:font-mono prose-code:text-sm prose-pre:bg-[#010409] prose-a:text-blue max-w-none">
+      <div className={cn(
+        "prose prose-invert prose-headings:font-semibold prose-code:font-mono prose-code:text-sm prose-pre:bg-[#010409] prose-a:text-blue max-w-none",
+        active !== "visual" && "mx-auto max-w-3xl",
+      )}>
         {activeNotesPanel}
       </div>
     </div>
@@ -109,6 +114,7 @@ export function TabSwitcher({
 function firstAvailable(panels: Record<TabKey, ReactNode | null>): TabKey {
   if (panels.explained) return "explained";
   if (panels.notes) return "notes";
+  if (panels.visual) return "visual";
   return "lab";
 }
 

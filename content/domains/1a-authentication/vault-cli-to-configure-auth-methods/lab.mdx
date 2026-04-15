@@ -7,6 +7,7 @@ source: "btkrausen"
 sourceUrl: "https://github.com/btkrausen/vault-codespaces/blob/main/labs/lab_intro_to_vault.md"
 license: "Apache-2.0"
 order: 3
+visualizer: true
 ---
 
 Laboratorio: **Intro to Vault Lab**
@@ -14,57 +15,57 @@ Laboratorio: **Intro to Vault Lab**
 → [Abrir en GitHub Codespaces](https://github.com/btkrausen/vault-codespaces/blob/main/labs/lab_intro_to_vault.md)
 
 ```bash
-vault status
+vault status # verifica que el servidor Vault está activo y sin sellar
 ```
 
 ```bash
-vault login root
+vault login root # autenticamos con el token raíz para tener acceso total
 ```
 
 ```bash
-vault secrets list
+vault secrets list # listamos todos los motores de secretos habilitados
 ```
 
 ```bash
-vault secrets list -detailed
+vault secrets list -detailed # igual que el anterior pero con info de tipo y configuración
 ```
 
 ```bash
-vault auth list
+vault auth list # listamos los métodos de autenticación habilitados
 ```
 
 ```bash
-vault auth list -detailed
+vault auth list -detailed # muestra tipo, accessor y opciones de cada método de auth
 ```
 
 ```bash
-vault kv put secret/first hello=world
+vault kv put secret/first hello=world # escribimos nuestro primer secreto en el motor KV
 vault kv put secret/my-secret username=admin password=secret123
 ```
 
 ```bash
-vault kv get secret/first
-vault kv get -field=hello secret/first
+vault kv get secret/first # leemos el secreto completo que acabamos de crear
+vault kv get -field=hello secret/first # extraemos solo el valor del campo "hello"
 ```
 
 ```bash
-vault kv list secret/
+vault kv list secret/ # listamos todas las claves almacenadas bajo el path secret/
 ```
 
 ```bash
-vault kv delete secret/first
+vault kv delete secret/first # eliminamos el secreto del path especificado
 ```
 
 ```bash
-vault token lookup
+vault token lookup # inspeccionamos el token actual: TTL, políticas y metadata
 ```
 
 ```bash
-vault token capabilities secret/first
+vault token capabilities secret/first # consultamos qué permisos tiene el token sobre ese path
 ```
 
 ```bash
-vault token create -ttl=1h
+vault token create -ttl=1h # creamos un nuevo token hijo con tiempo de vida de 1 hora
 ```
 
 ```bash

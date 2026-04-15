@@ -1,0 +1,190 @@
+---
+objectiveId: "1a"
+taskSlug: "approle-pull-authentication"
+kind: "notes"
+title: "Authentication Methods"
+source: "ismet55555"
+sourceUrl: "https://github.com/ismet55555/Hashicorp-Certified-Vault-Associate-Notes/blob/main/README.md"
+license: "MIT"
+order: 2
+---
+
+_The point of auth methods is to generate a vault access token, then use that token to log into and use vault._
+
+- Provided by plug-ins with binary
+- Can enable multiple auth methods
+  - Can also enable multiple instances for multiple auth methods
+- References **external** sources
+  - LDAP, GitHub, AWS IAM, etc
+- Default auth method
+  - Token
+  - Cannot disable it
+- All auth methods are in `/auth` path
+
+> **Note:** Exam will cover choosing the correct auth method for a given scenario
+
+
+
+### Auth Method Categories
+
+- **Cloud Providers:** AWS, Azure, GCP, etc
+- **Cloud Native:** Kubernetes, Cloud Foundry, Github, JWT
+- **Traditional:** LDAP, RADIUS, Kerberos, etc
+- **Vault Native (Internal):** Token, AppRole, Userpass
+
+### Choosing Auth Method
+
+- Who is going to access Vault?
+  - External/Internal
+  - Human/Machine
+- How are they going to access it?
+- What do they use today?
+  - GitHub Accounts
+  - Active directory
+  - Certificates
+- See which suits the client and environment
+
+### Auth Method: Userpass
+
+**Docs:** https://www.vaultproject.io/docs/auth/userpass
+
+- For human operators
+- Composed of username and password only
+- Enable userpass:
+  - `vault auth enable userpass`
+- Tune userpass:
+  - `vault auth tune -description "My Userpass" userpass/`
+- Create userpass user:
+  - `vault write auth/userpass/users/<USERNAME> password=<PASSWORD>`
+- Login using userpass
+  - `vault login -method=userpass username=<USERNAME>` (Prompts for password)
+  - `vault login -method=userpass username=<USERNAME> password=<PASSWORD>`
+
+### Auth Method: AppRole
+
+**Docs:** https://www.vaultproject.io/docs/auth/approle
+
+- Used for machines and apps
+- Consists of RoleID ("Username") and SecretID ("Password")
+- Client/Service/Application already has the RoleID and SecretID
+  - Vault server pushes SecretID to the client
+  - Client holds RoleID and SecretID when it boots up (maybe through configuration management or image)
+- **AppRole Set up**
+
+  - Executed anywhere before using AppRole
+  - Enable AppRole:
+    - `vault auth enable approle`
+  - Tune AppRole:
+    - `vault auth tune -description "My AppRole" approle/`
+  - Create a named role:
+    - ```
+      vault write auth/approle/role/<ROLE_NAME> \
+          role_name=<ROLE_NAME> \
+          secret_id_ttl=<SECRET_ID_TTL> \
+          token_num_uses=<TOKEN_NUM_USES> \
+          token_ttl=<TOKEN_TTL> \
+          token_max_ttl=<TOKEN_MAX_TTL>
+      ```
+
+- **Getting the SecretId**
+
+  - Can be done within the client or before deployment, adding it to the client image
+  - Need `role_id`
+    - `vault read auth/approle/role/<ROLE_NAME>/role-id`
+  - Need `secret_id`
+    - `vault write -force auth/approle/role/<ROLE_NAME>/secret-id`
+    - Note the `write`, this generates data
+    - Generated on the fly, or can specify the `secret_id`
+    - This yields `secret_id`, `secret_id_accessor`, and `secret_id_ttl`
+
+- **Getting the Client Vault Token**
+  - Executed by the client machine to further interact with vault for further vault usage
+  - This yields a token and its information
+  - Passed data includes `role_id` and `secret_id`
+  - Using CLI:
+    - ```
+      vault write auth/approle/login \
+          role_id=<ROLE_ID>
+          secret_id=<SECRET_ID>
+      ```
+  - Using REST API
+    - POST to `<VAULT_ADDR>/v1/auth/approle/login`
+
+### Auth Method: AWS
+
+- Enable AWS:
+  - `vault auth enable aws`
+- Configure credentials
+  - ```bash
+     vault write auth/aws/config/client \
+        secret_key=vCtSM8ZUEQ3mOFVlYPBQkf2sO6F/W7a5TVzrl3Oj \
+        access_key=VKIAJBRHKH6EVTTNXDHA
+    ```
+- More: https://www.vaultproject.io/docs/auth/aws#authentication
+
+
+### Configuration
+
+- All authentication methods are enabled on vault path `/sys/auth`
+- When enabled, all methods are enabled on a path
+  - If not specified, the path defaults to the actual method name
+- Methods cannot be moved after they are set on a path
+- Once enabled, can be tuned and configured
+  - **Tunning:** Common operation for all auth methods (ie. change description)
+  - **Configuration:** Specific to each auth method (in `/sys/auth/<method>/config`)
+
+### Basic Commands
+
+- List existing auth methods
+  - `vault auth list`
+- List available options
+  - `vault path-help auth/<AUTH METHOD NAME>`
+- Enable an auth method
+  - `vault auth enable [options] TYPE`
+  - Enable userpass
+    - `vault auth enable userpass`
+    - `vault auth enable -path=globopass userpass` (With custom auth path)
+  - Enable approle
+    - `vault auth enable approle`
+- Tune auth method:
+  - `vault auth tune [options] PATH`
+  - **Example:** Changing the description of an auth method
+    - `vault auth tune -description="First userpass" globopass/`
+- Disable:
+  - **Warning:** This will remove all info stored by this auth method
+  - `vault auth disable [options] PATH`
+
+### Authenticating (Logging in)
+
+Can be done using `vault login` or `vault write`
+
+- **Using `vault login`**
+  - **Docs:** https://www.vaultproject.io/docs/commands/login
+  - For interactive methods view user
+  - Will result in token and token information
+  - `vault login`
+    - Will prompt for token in terminal
+  - `vault login [TOKEN]`
+    - Will use provided token without prompting for token
+    - **Example:**
+      - `vault login s.2f3c5L1MHtnqbuNCbx90utmC`
+  - `vault login [options] [AUTH METHOD KEY-VALUE PAIRS]`
+    - Depends on the auth method used
+    - **Examples:**
+      - `vault login userpass username=<USERNAME> password=<PASSWORD>`
+      - `vault login -method=github -path=github-prod`
+  - `-token-only` - Output vault token only after authentication 
+  - `-no-print` - No output (quite)
+- **Using `vault write`**
+  - For a particular auth method path
+  - For any other method (AppRole, LDAP, etc)
+  - `vault write [options] PATH [KEY-VALUE PAIRS]`
+  - Depends on the auth method used
+  - Examples:
+    - `vault write auth/userpass/login/ismet password=<PASSWORD>`
+
+### Disable Auth Method
+
+- `vault auth disable [options] PATH`
+  - **Example:** `vault auth disable approle/`
+  - Note that we did not have to spacify path (auth/approle), since we are using `auth` cli sub-command

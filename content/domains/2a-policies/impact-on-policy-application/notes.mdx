@@ -1,0 +1,268 @@
+---
+objectiveId: "2a"
+taskSlug: "impact-on-policy-application"
+kind: "notes"
+title: "Vault Policies"
+source: "ismet55555"
+sourceUrl: "https://github.com/ismet55555/Hashicorp-Certified-Vault-Associate-Notes/blob/main/README.md"
+license: "MIT"
+order: 2
+---
+
+**Docs:** https://www.vaultproject.io/docs/concepts/policies
+
+- As everything, policies are path based
+- Grant or forbid access to certain paths and operations/capabilities (what you can do in Vault)
+- All policies are `deny` by default (Empty policy)
+- Policies are assigned/attached to tokens, identity, or auth method
+- Defines permissions (ie. Access Control Lists (ACL))
+- **There is no internal versioning of policies**
+  - As of now, you have to version and/or back up policy iterations some other way
+  - Potentially use `git` source control
+
+### `root` Policy
+
+- Can do ANYTHING in vault
+- Careful who gets assigned this policy!
+- Cannot be deleted or modified
+
+### `default` Policy
+
+This policy is automatically attached to all tokens.
+The `default` policy attached to a token allows the following:
+
+- `default` policy cannot be deleted 
+
+- Look up their own properties
+  - ```hcl
+    path "auth/token/lookup-self" { ... }
+    ```
+- Renew themselves
+  - ```hcl
+    path "auth/token/renew-self" { ... }
+    ```
+- Revoke themselves
+  - ```hcl
+    path "auth/token/revoke-self" { ... }
+    ```
+- Look up its own capabilities on a path
+  - ```hcl
+    path "sys/capabilities-self" { ... }
+    ```
+- Look up its own entity by id or name (using policy template)
+  - ```hcl
+    path "identity/entity/id/{{identity.entity.id}}" { ... }
+    ```
+
+### Policy Syntax
+
+**Docs:** https://www.vaultproject.io/docs/concepts/policies#policy-syntax
+
+- Policies are defined as **H**ashiCorp **C**onfiguration **L**anguage (HCL) _(preferred)_ or JSON
+- _Policy Path_ - Where and to what the policy is applied
+- _Policy Capabilities_ - What actions are allowed
+- Basic path expression: `path "some-path/in/vault"`
+- Two wildcards are available for path expressions:
+  1.  **Glob: `*`**
+      - Always added at the _END_ of a path expression
+      - This should match the extension of path (Note: This is not RegEx)
+      - **Example:** `path "some-path/*"`
+        - Evaluated as `path "some-path/something"` and `path "some-path/something/else"`
+  2.  **Segment: `+`**
+      - Always added _WITHIN_ a path
+      - This should match any number of characters for a path segment
+      - **Example:** `path "secrets/+/blah"`
+        - Evaluated as `path "secrets/something/blah"` and `path "secrets/else/blah"`
+- Note: Unless wildcards are specified, the expression is only for the specific path
+    - `"secret/foo"` would only address `secret/foo`, and nothing under it
+    - `"secret/foo/*"` would address everything under `secret/foo` but not `secret/foo` itself
+- `list` capability allows viewing in UI
+
+#### Examples
+
+- **Example** Grant `read` access to only secret `secret/foo`
+  - ```hcl
+    path "secret/foo" {
+    	capabilities = ["read", "list"]
+    }
+    ```
+- Wildcard `*` addresses all downstream paths
+  - **Example** Grant `read` and `list` access to all secrets
+  - ```hcl
+    path "secret/*" {
+    	capabilities = ["read", "list"]
+    }
+    ```
+- Note that any sub-path can be overridden by setting a policy:
+  - ```hcl
+    path "secret/super-secret" {
+    	capabilities = ["deny"]
+    }
+    ```
+- Policies rules can be set up to allow, disallow, or require policy parameters
+  - **Example** `secret/restricted` can only contain any value for `foo`, and values `zip` or `zap` for `bar`
+  - ```hcl
+    path "secret/restricted" {
+    	capabilities = ["create"]
+    	allowed_parameters = {
+    		"foo" = []              # <-- Allow any value for foo
+    		"bar" = ["zip", "zap"]  # <-- Allow values `zip` or `zap` for bar
+    	}
+    }
+    ```
+- Can use "glob" (`*`) patterns / wildcard to match downstream paths
+  - Note, this does not include the path before the `*`
+  - **Example** `secret/foo/*` can match `secret/foo/bar` or even `secret/foo/bar/baz/blah`
+  - ```hcl
+    path "secret/foo/*" {               #<-- Does not apply to secret/foo
+    	capabilities = ["read", "list"]
+    }
+    ```
+- Any number of characters that are bounded within a single path segment, use `+`
+  - **Example** Permit reading `secret/foo/bar/teamB`, `secret/bar/foo/teamB`, etc.
+  - ```hcl
+    path "secret/+/+/teamB" {
+    	capabilities = ["read"]
+    }
+    ```
+
+### Templated Policies (Dynamic Parameters)
+
+**Docs:** https://www.vaultproject.io/docs/concepts/policies#templated-policies
+
+- Dynamic way of defining paths in policies
+- These are used within the policy files
+- Using `{{ }}` to let vault interpreter know that you are adding a parameter, then adding the path to the parameter
+  - **Example:** Insert the name of the entity to define a policy
+    - ```hcl
+      path "secret/{{identity.entity.name}}/*" { ... }
+      ```
+  - **Example:** Use the id of the entity to define a policy
+    - ```hcl
+      path "secret/{{identity.entity.id}}/*" { ... }
+      ```
+- **NOTE:** Currently, the only source for parameters is the `identity` secrets engine
+  - **`identity.entity`** - `id`, `name`, `metadata`, `aliases`
+  - **`identity.groups`** - `ids`, `names`
+
+### Policy Capabilities
+
+**Docs:** https://www.vaultproject.io/docs/concepts/policies#capabilities
+
+- Follows CRUD semantics (**C**reate, **R**ead, **U**pdate, **D**elete)
+
+  - `create` - Creating data at the given path (similar to `update`) _(REST `POST/PUT` request)_
+  - `read` - Reading data at the given path _(REST `GET` request)_
+  - `update` - Changing data at given path _(REST `POST/PUT` request)_
+  - `delete` - Deleting data at given path _(REST `DELETE` request)_
+
+- Additional capabilities:
+  - `list`
+    - Listing data at given path
+    - No access to key data (REST `LIST` request)
+    - Allows viewing in the Vault web UI
+  - `sudo` - Give token holder cccess to paths that are _root-protected_
+  - `deny` - Disallow access to given path or path pattern. Overrides any other allow action
+
+### Policy Evaluation Rules
+
+- Policies which Vault applies to tokens are determined by the most-specific match available
+  - **Example:** `secret/foo/bar` is more specific than `secret/*`
+- If same policy path pattern appears in multiple policies, the union of both is taken
+  - **Example:** Combine `[read, list]` with `[create]` is `[read, list, create]`
+- If different patterns appear in multiple policies, the highest-precedence one is taken
+
+### Working with Policies
+
+- List existing policies
+  - `vault policy list`
+  - `vault read /sys/policy`
+- Read the contents of a policy
+  - `vault policy read [OPTIONS] [POLICY NAME]`
+    - **Example:** `vault policy read secrets-mgmt`
+  - `vault read sys/policy/[POLICY NAME]`
+- *Write* a new policy or *update* an existing policy
+  - Using a File: `vault policy write [OPTIONS] [POLICY NAME] [POLICY FILE]`
+    - **Example:** `vault policy write secrets-mgmt policy.hcl`
+  - Using Standard In: `vault policy write [OPTIONS] [POLICY NAME] -`
+    - **Example:** `cat policy.hcl | vault policy write secrets-mgmt -`
+- Delete a policy
+  - `vault policy delete [OPTIONS] [POLICY NAME]`
+    - **Example:** `vault policy delete secrets-mgmt`
+- Format the policy (make more readable syntax)
+  - `vault policy fmt [OPTIONS] [POLICY FILE]`
+    - **Example:** `vault policy fmt policy.hcl`
+
+### Assigning Policies
+
+Here the policy has to already be created and active in Vault to be assigned.
+
+1. Associate policy directly with a token at token creation
+   - **Example:** `vault token create -policy=secrets-mgmt`
+2. Assign policy to a user in userpass
+   - **Example:** `vault write auth/userpass/users/ismet token_policies="secrets-mgmt"`
+3. Assign policy to an entity in the identity secrets engine
+   - **Example:** `vault write identity/entity/name/ismet policies="secrets-mgmt"`
+
+### Parameter Constraints
+
+**Docs:** https://www.vaultproject.io/docs/concepts/policies#fine-grained-control
+
+1. `required_parameters` - List of parameters that must be set
+   - **Example**: Requires users to create sub-items within `secret/foo` with `bar` and `baz`
+     - ```hcl
+       path "secret/foo" {
+       	capabilities = ["create"]
+       	required_parameters = ["bar", "baz"]
+       }
+       ```
+2. `allowed_parameters` - Keys and values that are permitted on the given path
+
+   - **Example**: Allows users to create `secret/foo` with ONLY `bar`, with `bar` containing ANY value
+     - ```hcl
+       path "secret/foo" {
+       	capabilities = ["create"]
+       	allowed_parameters = {
+       		"bar" = []
+       	}
+       }
+       ```
+   - **Example**: Allows users to create `secret/foo` with ONLY `bar`, with `bar` containing ONLY `zip` and `zap`
+     - ```hcl
+       path "secret/foo" {
+       	capabilities = ["create"]
+       	allowed_parameters = {
+       		"bar" = ["zip", "zap"]
+       	}
+       }
+       ```
+   - **Example**: Allows users to create `secret/foo` with any key and value, but if user creates `bar`, it must be `zip` or `zap`
+     - ```hcl
+       path "secret/foo" {
+       	capabilities = ["create"]
+       	allowed_parameters = {
+       		"bar" = ["zip", "zap"]
+       		"*" = []
+       	}
+       }
+       ```
+
+3. `denied_parameters` - Blacklist of parameters and values (Supersedes `allowed_parameters`)
+   - **Example**: Allows users to create `secret/foo` with any parameter but not named `bar`
+     - ```hcl
+       path "secret/foo" {
+       	capabilities = ["create"]
+       	denied_parameters = {
+       		"bar" = []
+       	}
+       }
+       ```
+   - **Example**: Allows users to create `secret/foo` with parameter named `bar`, which cannot contain `zip` or `zap`
+     - ```hcl
+       path "secret/foo" {
+       	capabilities = ["create"]
+       	denied_parameters = {
+       		"bar" = ["zip", "zap"]
+       	}
+       }
+       ```

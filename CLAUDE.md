@@ -66,3 +66,13 @@ content/
 
 El tab "Notas técnicas" tiene un botón ES/EN que aparece solo cuando existe `notes-es.mdx`.
 El estado del toggle es local al componente `TabSwitcher` (se pierde al recargar).
+
+## Feature: Lab visualizer
+
+Pestaña adicional "Lab visual" en la página de tarea. Se activa con `visualizer: true` en el frontmatter del `lab.mdx`. El parser (`lib/lab-visualizer/parse-command.ts`) mapea subcomandos de `vault` a nodos del diagrama (React Flow + Framer Motion). El lab piloto es `1a/vault-cli-to-configure-auth-methods`.
+
+- Componentes: `components/lab-visualizer/*`
+- Lógica server: `lib/lab-visualizer/*`
+- Hook: `lib/hooks/use-lab-player.ts`
+- Atajos dentro del tab: `←` `→` `Espacio` `r`
+- Para habilitar en otro lab: `visualizer: true` en frontmatter. No requiere código adicional.

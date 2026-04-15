@@ -22,12 +22,11 @@ export function resolveMapping(
   mappings: Mapping[],
   file: string,
   heading: string,
-): { objectiveId: string; taskSlug: string } | null {
-  const exact = mappings.find((m) => m.file === file && m.heading === heading);
-  if (exact) return { objectiveId: exact.objectiveId, taskSlug: exact.taskSlug };
-  const fileOnly = mappings.find((m) => m.file === file && !m.heading);
-  if (fileOnly) return { objectiveId: fileOnly.objectiveId, taskSlug: fileOnly.taskSlug };
-  return null;
+): { objectiveId: string; taskSlug: string }[] {
+  const exact = mappings.filter((m) => m.file === file && m.heading === heading);
+  if (exact.length > 0) return exact.map((m) => ({ objectiveId: m.objectiveId, taskSlug: m.taskSlug }));
+  const fileOnly = mappings.filter((m) => m.file === file && !m.heading);
+  return fileOnly.map((m) => ({ objectiveId: m.objectiveId, taskSlug: m.taskSlug }));
 }
 
 interface Section {
@@ -96,26 +95,27 @@ async function main() {
         file,
         heading === "__file__" ? (undefined as unknown as string) : heading,
       );
-      if (!resolved) continue;
-      const objSlug = objSlugById.get(resolved.objectiveId);
-      if (!objSlug) continue;
-      const dir = taskDir(resolved.objectiveId, objSlug, resolved.taskSlug);
-      await ensureDir(dir);
-      await writeMdx(
-        path.join(dir, "notes.mdx"),
-        {
-          objectiveId: resolved.objectiveId,
-          taskSlug: resolved.taskSlug,
-          kind: "notes",
-          title: heading === "__file__" ? file.replace(/\.md$/, "") : heading,
-          source: "ismet55555",
-          sourceUrl: `https://github.com/ismet55555/Hashicorp-Certified-Vault-Associate-Notes/blob/main/${file}`,
-          license: "MIT",
-          order: 2,
-        },
-        body,
-      );
-      written++;
+      for (const match of resolved) {
+        const objSlug = objSlugById.get(match.objectiveId);
+        if (!objSlug) continue;
+        const dir = taskDir(match.objectiveId, objSlug, match.taskSlug);
+        await ensureDir(dir);
+        await writeMdx(
+          path.join(dir, "notes.mdx"),
+          {
+            objectiveId: match.objectiveId,
+            taskSlug: match.taskSlug,
+            kind: "notes",
+            title: heading === "__file__" ? file.replace(/\.md$/, "") : heading,
+            source: "ismet55555",
+            sourceUrl: `https://github.com/ismet55555/Hashicorp-Certified-Vault-Associate-Notes/blob/main/${file}`,
+            license: "MIT",
+            order: 2,
+          },
+          body,
+        );
+        written++;
+      }
     }
   }
   console.log(`[ingest:ismet] wrote ${written} notes.mdx files`);

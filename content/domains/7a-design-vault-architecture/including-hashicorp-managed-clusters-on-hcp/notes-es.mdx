@@ -1,0 +1,82 @@
+---
+objectiveId: "7a"
+taskSlug: "including-hashicorp-managed-clusters-on-hcp"
+kind: "notes-es"
+title: "High Availability (Cluster)"
+source: "ismet55555"
+sourceUrl: "https://github.com/ismet55555/Hashicorp-Certified-Vault-Associate-Notes/blob/main/README.md"
+license: "MIT"
+order: 2
+---
+
+**Docs:** https://www.vaultproject.io/docs/internals/high-availability
+
+- Un nodo activo y muchos nodos en espera
+- El nodo activo procesa solicitudes de clientes
+
+### Networking
+
+- Los nodos pasivos reenvían o redirigen solicitudes al nodo activo para su procesamiento
+- Nodos de solo lectura _(Solo Enterprise)_
+  - Lectura o listado - Algo que no modifica el almacenamiento backend
+- Un único nodo es elegido como nodo líder (activo)
+
+  - El nodo líder coloca un bloqueo de escritura en el almacenamiento backend (si el backend lo soporta)
+
+- Configuraciones de cluster
+  - **Docs:**: https://www.vaultproject.io/docs/configuration#high-availability-parameters
+  - Se establece en el archivo de configuración de vault
+  - `cluster_address`
+    - En qué dirección IP/host escuchar para la comunicación basada en cluster
+    - Ejemplo
+      - ```hcl
+        listener "tcp" {
+          address = 10.1.1.1:8200           # <-- Escuchar solicitudes de cliente vault
+          cluster_address = 10.1.1.1:8201   # <-- Escuchar comunicación basada en cluster
+        }
+        ```
+  - `cluster_addr`
+    - La URL que el nodo entregará al cluster para el reenvío de solicitudes.
+    - Ejemplo: Para nodo servidor activo (server1)
+      - ```hcl
+        cluster_addr = "https://server1:8201"  # <-- URL para comunicación de cluster entrante
+        ```
+  - `api_addr`
+    - URL que el nodo entrega al cluster para redirección de clientes vault
+    - Ejemplo: Para nodo servidor en espera (server2)
+      - ```hcl
+        api_addr = "https://server2:8200"      # <-- URL para solicitudes API al servidor Vault
+        ```
+- Manejo de solicitudes de cliente
+  1. **Reenvío de solicitudes (predeterminado)**
+     - El cliente se comunica con el servidor en espera (o cualquier servidor disponible)
+     - El servidor en espera se comunica con el servidor activo (líder) en segundo plano
+     - El servidor en espera responde al cliente
+     - El cliente nunca sabe que la solicitud ha sido reenviada internamente al nodo activo
+  2. **Redirección de cliente**
+     - La solicitud del cliente es redirigida al nodo activo
+     - El cliente se comunica directamente con el nodo activo
+  3. **Load Balancer**
+     - El cliente envía una solicitud al load balancer, que resuelve la solicitud al nodo activo
+     - **HashiCorp recomienda no usar un load balancer**
+
+### Vault Replication
+
+**Docs:** https://www.vaultproject.io/docs/internals/replication
+
+- ¡Característica solo para Enterprise!
+- La unidad de replicación es el cluster
+  - El cluster primario replica datos a clusters secundarios
+  - La replicación es uno a muchos
+- La replicación es asincrónica
+- Opciones de replicación
+  - **Recuperación ante desastres**
+    - Replica datos, tokens y leases - Disponibles inmediatamente
+    - Solo está presente para recuperación ante desastres, no puede procesar solicitudes
+  - **Rendimiento**
+    - Replica solo datos (no tokens o leases)
+    - Los clientes en el sitio secundario para este cluster necesitan generar sus propios tokens y leases
+      para comunicarse con este cluster secundario
+    - Permite solicitudes de solo lectura a datos vault replicados
+    - La solicitud de modificación de datos se reenvía al cluster primario
+- Puede tener un cluster de recuperación ante desastres y un cluster de rendimiento al mismo tiempo

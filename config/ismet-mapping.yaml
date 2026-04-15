@@ -10,25 +10,101 @@
 #     taskSlug: "<slug>"
 
 mappings:
+  # --- 1a: Authentication ---
   - file: "README.md"
     heading: "Authentication Methods"
     objectiveId: "1a"
     taskSlug: "vault-cli-to-configure-auth-methods"
 
   - file: "README.md"
+    heading: "Vault UI"
+    objectiveId: "1a"
+    taskSlug: "vault-ui-to-configure-auth-methods"
+
+  - file: "README.md"
+    heading: "Authentication Methods"
+    objectiveId: "1a"
+    taskSlug: "approle-pull-authentication"
+
+  - file: "README.md"
+    heading: "Authentication Methods"
+    objectiveId: "1a"
+    taskSlug: "entities-and-groups"
+
+  # --- 2a: Policies ---
+  - file: "README.md"
     heading: "Vault Policies"
     objectiveId: "2a"
     taskSlug: "vault-policies-tutorial"
 
+  - file: "README.md"
+    heading: "Vault Policies"
+    objectiveId: "2a"
+    taskSlug: "impact-on-policy-application"
+
+  # --- 3a: Tokens ---
   - file: "README.md"
     heading: "Tokens"
     objectiveId: "3a"
     taskSlug: "tokens-tutorial"
 
   - file: "README.md"
+    heading: "Tokens"
+    objectiveId: "3a"
+    taskSlug: "characteristics-of-batch-tokens"
+
+  - file: "README.md"
+    heading: "Leases"
+    objectiveId: "3a"
+    taskSlug: "know-when-a-token-expires-and-no-longer-renewable"
+
+  # --- 4a: Secrets Engines ---
+  - file: "README.md"
     heading: "Secrets Engines"
     objectiveId: "4a"
     taskSlug: "secrets-management"
+
+  - file: "README.md"
+    heading: "Secrets Engines"
+    objectiveId: "4a"
+    taskSlug: "versioned-key-value-secrets-engine"
+
+  - file: "README.md"
+    heading: "Secrets Engines"
+    objectiveId: "4a"
+    taskSlug: "cubbyhole-response-wrapping"
+
+  - file: "README.md"
+    heading: "Secrets Engines"
+    objectiveId: "4a"
+    taskSlug: "secrets-as-a-service-dynamic-secrets"
+
+  - file: "README.md"
+    heading: "Secrets Engines"
+    objectiveId: "4a"
+    taskSlug: "transit-secrets-engine"
+
+  # --- 6a: Encryption as a Service ---
+  - file: "README.md"
+    heading: "Secrets Engines"
+    objectiveId: "6a"
+    taskSlug: "encryption-as-a-service-transit-secrets-engine"
+
+  - file: "README.md"
+    heading: "Secrets Engines"
+    objectiveId: "6a"
+    taskSlug: "transit-secrets-re-wrapping"
+
+  # --- 7a: Architecture ---
+  - file: "README.md"
+    heading: "Vault Architecture"
+    objectiveId: "7a"
+    taskSlug: "vault-reference-architecture-guide"
+
+  - file: "README.md"
+    heading: "High Availability (Cluster)"
+    objectiveId: "7a"
+    taskSlug: "including-hashicorp-managed-clusters-on-hcp"
 
   - file: "README.md"
     heading: "Vault Agent"
@@ -36,6 +112,11 @@ mappings:
     taskSlug: "the-challenge-that-vault-agent-solves"
 
   - file: "README.md"
-    heading: "Vault Architecture"
+    heading: "Vault Agent"
     objectiveId: "7a"
-    taskSlug: "vault-reference-architecture-guide"
+    taskSlug: "vault-agent-templates-tutorial"
+
+  - file: "README.md"
+    heading: "Vault Agent"
+    objectiveId: "7a"
+    taskSlug: "challenges-that-vso-solves"

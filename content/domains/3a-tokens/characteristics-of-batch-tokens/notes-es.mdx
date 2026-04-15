@@ -1,0 +1,233 @@
+---
+objectiveId: "3a"
+taskSlug: "characteristics-of-batch-tokens"
+kind: "notes-es"
+title: "Tokens"
+source: "ismet55555"
+sourceUrl: "https://github.com/ismet55555/Hashicorp-Certified-Vault-Associate-Notes/blob/main/README.md"
+license: "MIT"
+order: 2
+---
+
+**Docs:**: https://www.vaultproject.io/docs/concepts/tokens
+
+- Se utilizan para autenticación dentro de Vault
+- Los tokens son una colección de datos utilizada para acceder a Vault
+- Se utilizan directamente o a través de métodos de autenticación (generados dinámicamente)
+- Los tokens se asignan a políticas para autorización y metadatos con fines de auditoría
+
+### Creación de Tokens
+
+Los tokens se pueden crear de las siguientes formas:
+
+1. **Método de autenticación** - Los tokens son generados por un método de autenticación (userpass, github, aws, etc)
+2. **Token padre** - Usar un token existente para generar un token hijo
+3. **Token raíz** - Requiere un proceso especial para generarse
+   - Puede hacer CUALQUIER COSA (Peligroso)
+   - No expira
+   - Se crea a través de:
+     1. Inicializar el servidor Vault
+     2. Token raíz existente
+     3. Usar el comando `operator`
+   - _Revócalo lo antes posible / Tan pronto como se complete la acción_
+     - Créalo según sea necesario
+   - ¿Por qué crear un token raíz?
+     1. Realizar la configuración inicial de vault
+     2. Si el método de autenticación principal no está disponible
+     3. Situación de emergencia donde se necesita un token raíz
+
+### Propiedades del Token
+
+Esta lista no es exhaustiva.
+
+- `id` - ID de token único
+- `accessor` - Un valor para buscar el token, sin necesidad de utilizarlo
+- `type` - Qué tipo de token es, "service" o "batch"
+- `policies` - Lista de políticas a las que se permite acceder al token
+- `ttl` - Tiempo de vida del token. Cuánto tiempo será válido.
+- `orphaned` - Si el token tiene un token padre o es independiente
+- Ejemplo de propiedades del token
+  - ```text
+    $ vault token lookup s.5kpKplh3BS1lWjGU2kY6zJAM
+
+    Key                 Value
+    ---                 -----
+    accessor            AGR6cgoicILcBGE1PgiwqNhd
+    creation_time       1643577866
+    creation_ttl        768h
+    display_name        token
+    entity_id           n/a
+    expire_time         2022-03-03T16:24:26.3057503-05:00
+    explicit_max_ttl    0s
+    id                  s.5kpKplh3BS1lWjGU2kY6zJAM
+    issue_time          2022-01-30T16:24:26.3057549-05:00
+    meta                <nil>
+    num_uses            5                                    <-- Permitido ser utilizado 5 veces
+    orphan              false
+    path                auth/token/create
+    policies            [default]
+    renewable           true
+    ttl                 767h59m49s                           <-- Tiempo hasta expiración si no se renueva
+    type                service
+    ```
+
+
+### Token Accessor
+
+**Docs:** https://www.vaultproject.io/docs/concepts/tokens#token-accessors
+
+- Solo puede ver las propiedades del token (metadatos), no puede recuperar el ID real del token
+- Ver capacidades en una ruta determinada
+- Se utiliza para la gestión de tokens como renovar o revocar un token
+  - Más gestión de tokens: https://www.idkrtm.com/hashicorp-vault-managing-tokens/
+- Algunas situaciones donde puede ser necesario:
+  - Algunos programas pueden solo necesitar la capacidad de revocar un token y verificar el estado de los tokens hijo
+  - Ver lista de todos los tokens emitidos, como: `vault list auth/token/accessors`
+  - Auditar el uso de tokens por accessor en el registro de auditoría. El ID no se verá
+- Ejemplo de información del token accessor:
+  - ```text
+    $ vault token lookup -accessor AGR6cgoicILcBGE1PgiwqNhd
+
+    Key                 Value
+    ---                 -----
+    accessor            AGR6cgoicILcBGE1PgiwqNhd
+    creation_time       1643577866
+    creation_ttl        768h
+    display_name        token
+    entity_id           n/a
+    expire_time         2022-03-03T16:24:26.3057503-05:00
+    explicit_max_ttl    0s                                 <-- Sin Max TTL establecido
+    id                  n/a                                <-- No disponible con accessor
+    issue_time          2022-01-30T16:24:26.3057549-05:00
+    meta                <nil>
+    num_uses            5
+    orphan              false
+    path                auth/token/create
+    policies            [default]
+    renewable           true
+    ttl                 767h58m18s
+    type                service`
+    ```
+
+
+### Trabajar con Tokens
+
+- Crear un nuevo token
+  - `vault token create [OPTIONS]`
+    - **Ejemplo:** `vault token create -policy=my-policy -ttl=60m`
+    - **Ejemplo:** `vault write auth/token/create -policy=default -ttl=60m`
+- Ver propiedades del token
+  - `vault token lookup [OPTIONS] [ACCESSOR or ID]`
+    - **Ejemplo:** `vault token lookup -accessor=FJKD0870sdfjlhjsdf07sdfY`
+  - También puede ver tu propio token
+    - `vault token lookup`
+- Verificar capacidades/permisos para una ruta específica
+  - `vault token capabilities [TOKEN] [PATH]`
+    - **Ejemplo:** `vault token capabilities x.TG08098SLDLFHlsdhflsdhSDFI secret/foo`
+- Renovar un token
+  - `vault token renew [OPTIONS] [ACCESSOR or ID]`
+    - **Ejemplo:** `vault token renew -increment=30m -accessor=FJKD0870sdfjlhjsdf07sdfY`
+- Revocar un token
+  - `vault token revoke [OPTIONS] [ACCESSOR or ID]`
+    - **Ejemplo:** `vault token revoke -accessor=FJKD0870sdfjlhjsdf07sdfY`
+- Listar todos los tokens accessors
+  - `vault list /auth/token/accessors`
+
+> **Nota:** También puede usar el formato API: `vault write auth/token/....`
+
+### Tipos de Token
+
+1. **Service Token**
+
+   - Tipo de token predeterminado para la mayoría de situaciones
+   - Completamente funcional
+   - Pesado
+   - Debe escribirse en el backend de almacenamiento
+   - Se puede gestionar a través del accessor del token o del ID del token
+   - Los tokens raíz y periódicos son tokens de servicio
+   - La vida útil calculada se basa en el TTL del token o en cualquier renovación de ese token
+   - Puede crear tokens hijo
+   - Comienza con **"s."** en el ID del token
+   - **Ejemplo:**
+     - `vault token create -policy=my-policy -ttl=60m`
+
+2. **Batch Token**
+
+   - No es el predeterminado, debe crearse explícitamente
+   - Características limitadas
+   - Ligero
+   - No se escribe en el backend de almacenamiento persistente
+   - No tiene accessor de token (metadatos)
+   - Vida útil estática - Una vez creado y configurado el TTL, no puede renovarse
+   - No tiene tokens hijo
+   - Comienza con **"b."** en el ID del token
+   - **Ejemplo:**
+     - `vault token create -type=batch -policy=default -ttl=30m`
+
+3. Tipo de Token: **Periódico**
+   - También es un token de servicio
+   - No es el predeterminado, debe crearse explícitamente
+   - Puede renovarse indefinidamente, no expira, sin max TTL
+   - TTL se establece en el período en la creación y renovaciones
+   - Requiere privilegios de raíz (`sudo`) para crear
+   - Las renovaciones no pueden exceder lo que ha sido proporcionado por `-period`
+   - **Ejemplo:**
+     - Crear: `vault token create -policy=default -period=2h`
+     - Renovar: `vault token renew -increment=60m s.YvR0cqzXsDDdCne0w28QZ4kr`
+
+### Vida útil del Token
+
+- TTL (Time to Live) - Cuánto tiempo es válido el token
+- Max TTL
+  - Cuánto tiempo puede ser válido el token antes de que no pueda renovarse más
+  - No puede renovar el token más allá de este punto
+  - `token-max-ttl`
+
+#### Trabajar con la Vida útil del Token
+
+- Renovar un token
+  - `vault token renew [OPTIONS] [ACCESSOR or ID] [ -increment=<DURATION> ]`
+    - **Ejemplo:** Extender el token actualmente activo por 30 minutos
+      - `vault token renew -increment=30m`
+    - **Ejemplo:** Extender otro token por 30 minutos
+      - `vault token renew -increment=30m -accessor=FJKD0870sdfjlhjsdf07sdfY`
+- Revocar un token
+  - `vault token revoke [OPTIONS] [ACCESSOR or ID]`
+    - **Ejemplo:** Revocar el token actualmente activo
+      - `vault token revoke -self`
+    - **Ejemplo:** Revocar otro token
+      - `vault token revoke -accessor=FJKD0870sdfjlhjsdf07sdfY`
+
+#### Establecer TTL Máximo del Token
+
+> **Nota:** El max TTL predeterminado es de 32 días (768 horas)
+
+El TTL se evalúa desde el TTL más superior (general) hasta el nivel del token.
+
+1. System max TTL
+
+   - Configuración de todo el sistema para TTL máximo
+   - Definido dentro del archivo de configuración de Vault
+   - Evaluado dinámicamente (se verificará constantemente)
+   - Configuraciones: `default_lease_ttl`, `max_lease_ttl`
+   - **Ejemplo:**
+     - `vault server -config /etc/vault/my-config.hcl`
+
+2. Mount max TTL para método de autenticación específico
+
+   - Específico del montaje
+   - Cambiar con el comando `vault auth tune`
+   - Anulará el max TTL del sistema
+   - Puede ser mayor o menor que el max TTL del sistema
+   - Ejemplos:
+     - `vault auth enable -max-lease-ttl=776h userpass/`
+     - `vault auth tune -max-lease-ttl=72h`
+
+3. Auth method max TTL para objetos dentro del método de autenticación
+   - Establecer max TTL para role, grupo, usuario, etc.
+   - Cambiar con el comando `write`
+   - Anula el max TTL del sistema y del montaje
+   - DEBE ser menor que el max TTL del sistema y del montaje
+   - **Ejemplo:**
+     - `vault write auth/userpass/users/ismet max-lease-ttl=72h`
+     - `vault write auth/userpass/users/bob token-max-ttl=72h password=sEcReT`

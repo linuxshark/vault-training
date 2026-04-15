@@ -1,0 +1,82 @@
+---
+objectiveId: "7a"
+taskSlug: "including-hashicorp-managed-clusters-on-hcp"
+kind: "notes"
+title: "High Availability (Cluster)"
+source: "ismet55555"
+sourceUrl: "https://github.com/ismet55555/Hashicorp-Certified-Vault-Associate-Notes/blob/main/README.md"
+license: "MIT"
+order: 2
+---
+
+**Docs:** https://www.vaultproject.io/docs/internals/high-availability
+
+- One active and many standby nodes
+- Active node processes client requests
+
+### Networking
+
+- Passive nodes forward or redirect requests to active node for processing
+- Read-only nodes _(Enterprise only)_
+  - Read or list - Something that doesn't modify backend storage
+- One single node is elected as the leader (active) node
+
+  - Leader node places a write lock on the backend storage (if lock supported by backend)
+
+- Cluster configurations
+  - **Docs:**: https://www.vaultproject.io/docs/configuration#high-availability-parameters
+  - Set in the vault config file
+  - `cluster_address`
+    - Which IP/host address to listen on for cluster based communication
+    - Example
+      - ```hcl
+        listener "tcp" {
+          address = 10.1.1.1:8200           # <-- Listen for vault client requests
+          cluster_address = 10.1.1.1:8201   # <-- Listen for cluster-based communication
+        }
+        ```
+  - `cluster_addr`
+    - The URL that the node will hand out for cluster for request forwarding.
+    - Example: For active server node (server1)
+      - ```hcl
+        cluster_addr = "https://server1:8201"  # <-- URL for cluster communication coming in
+        ```
+  - `api_addr`
+    - URL that that the node hands out for cluster for vault client redirection
+    - Example: For standby server node (server2)
+      - ```hcl
+        api_addr = "https://server2:8200"      # <-- URL for API requests to Vault server
+        ```
+- Client request handling
+  1. **Request Forwarding (default)**
+     - Client talks to standby server (or any available server)
+     - The standby server talks to active (leader) server in the background
+     - The standby server responds to client
+     - Client never knows that the request has been internally forwarded to active node
+  2. **Client Redirection**
+     - Client request is redirected to the active node
+     - Client talks directly to active node directly
+  3. **Load Balancer**
+     - Client sends request to load balancer, load balancer resolves the request to the active node
+     - **HashiCorp recommends not use a load balancer**
+
+### Vault Replication
+
+**Docs:** https://www.vaultproject.io/docs/internals/replication
+
+- Enterprise only feature!
+- Unit of replication is the cluster
+  - Primary cluster replicates data to secondary clusters
+  - Replication is one-to-many
+- Replication is asynchronous
+- Replication Options
+  - **Disaster recovery**
+    - Replicates data, tokens, and leases - Immediately available
+    - Only there for disaster recovery, cannot take requests
+  - **Performance**
+    - Replicates data only (not tokens or leases)
+    - Clients in secondary site for this cluster need to generate their own tokens and leases
+      to talk to this secondary cluster
+    - Allows read-only requests to replicated vault data
+    - Data modification request is forwarded to primary cluster
+- Can have one disaster recovery cluster and one performance cluster at the same time
