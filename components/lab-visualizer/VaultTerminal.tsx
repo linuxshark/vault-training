@@ -5,10 +5,12 @@ import { useReducedMotion } from "framer-motion";
 export function VaultTerminal({
   commands,
   output,
+  caption,
   charMs = 25,
 }: {
   commands: string[];
   output?: string | null;
+  caption?: string | null;
   charMs?: number;
 }) {
   const reduced = useReducedMotion();
@@ -34,7 +36,7 @@ export function VaultTerminal({
 
   return (
     <div
-      className="h-[360px] overflow-auto rounded-lg border border-border-subtle bg-[#010409] p-4 font-mono text-[13px] leading-6 text-text"
+      className="h-[440px] overflow-auto rounded-lg border border-border-subtle bg-[#010409] p-4 font-mono text-[13px] leading-6 text-text"
       aria-live="polite"
       aria-atomic="false"
     >
@@ -49,6 +51,12 @@ export function VaultTerminal({
           )}
         </div>
       ))}
+      {caption && typed.length >= joined.length && (
+        <div className="mt-3 flex text-[#4ec9b0]">
+          <span className="mr-2 select-none opacity-60">#</span>
+          <span className="whitespace-pre-wrap opacity-80">{caption}</span>
+        </div>
+      )}
       {output && (
         <pre className="mt-3 whitespace-pre-wrap text-text-muted">{output}</pre>
       )}

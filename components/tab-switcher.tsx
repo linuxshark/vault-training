@@ -101,7 +101,10 @@ export function TabSwitcher({
           <StatusPill status={status} onClick={() => void advance(nextStatus(status))} />
         </div>
       </div>
-      <div className="prose prose-invert prose-headings:font-semibold prose-code:font-mono prose-code:text-sm prose-pre:bg-[#010409] prose-a:text-blue max-w-none">
+      <div className={cn(
+        "prose prose-invert prose-headings:font-semibold prose-code:font-mono prose-code:text-sm prose-pre:bg-[#010409] prose-a:text-blue max-w-none",
+        active !== "visual" && "mx-auto max-w-3xl",
+      )}>
         {activeNotesPanel}
       </div>
     </div>

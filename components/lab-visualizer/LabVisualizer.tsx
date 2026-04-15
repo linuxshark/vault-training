@@ -11,7 +11,7 @@ import { deriveVisible } from "./VaultScene";
 
 const VaultScene = dynamic(
   () => import("./VaultScene").then((m) => ({ default: m.VaultScene })),
-  { ssr: false, loading: () => <div className="h-[360px] animate-pulse rounded-lg bg-bg-elevated" /> },
+  { ssr: false, loading: () => <div className="h-[440px] animate-pulse rounded-lg bg-bg-elevated" /> },
 );
 
 export function LabVisualizer({
@@ -49,12 +49,17 @@ export function LabVisualizer({
 
   return (
     <div className="space-y-3">
-      <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-        <VaultScene visible={visible} active={active} />
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-5">
+        <div className="md:col-span-3">
+          <VaultScene visible={visible} active={active} />
+        </div>
+        <div className="md:col-span-2">
         <VaultTerminal
           commands={player.current?.commands ?? []}
           output={player.current?.output ?? null}
+          caption={player.current?.caption ?? null}
         />
+        </div>
       </div>
       <LabStepTimeline total={player.total} current={player.idx} onSelect={player.goto} />
       <LabControls

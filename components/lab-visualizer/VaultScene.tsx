@@ -99,7 +99,7 @@ export function VaultScene({
   }, [visible, active]);
 
   return (
-    <div className="h-[360px] w-full rounded-lg border border-border-subtle bg-bg" aria-label="Diagrama Vault">
+    <div className="h-[440px] w-full rounded-lg border border-border-subtle bg-bg" aria-label="Diagrama Vault">
       <ReactFlow
         nodes={nodes}
         edges={edges}

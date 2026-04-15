@@ -66,20 +66,22 @@ export default async function TaskView({
         />
       }
     >
-      <article className="mx-auto max-w-3xl space-y-4">
-        <nav className="text-xs text-text-dim">
-          <span>{objective.title}</span>
-          <span className="mx-1.5 text-text-dim/50">/</span>
-          <span className="text-text-muted">{title}</span>
-        </nav>
-        <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
-        <div className="flex items-center gap-3">
-          <StatusPill status={progress?.status ?? "NOT_STARTED"} />
-          {loaded.explained?.frontmatter.estMinutes && (
-            <span className="text-xs text-text-muted">
-              est. {loaded.explained.frontmatter.estMinutes} min
-            </span>
-          )}
+      <div className="space-y-4">
+        <div className="mx-auto max-w-3xl space-y-4">
+          <nav className="text-xs text-text-dim">
+            <span>{objective.title}</span>
+            <span className="mx-1.5 text-text-dim/50">/</span>
+            <span className="text-text-muted">{title}</span>
+          </nav>
+          <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
+          <div className="flex items-center gap-3">
+            <StatusPill status={progress?.status ?? "NOT_STARTED"} />
+            {loaded.explained?.frontmatter.estMinutes && (
+              <span className="text-xs text-text-muted">
+                est. {loaded.explained.frontmatter.estMinutes} min
+              </span>
+            )}
+          </div>
         </div>
         <TabSwitcher
           taskId={taskId}
@@ -94,13 +96,15 @@ export default async function TaskView({
             lab: lab?.content ?? null,
           }}
         />
-        <FooterNav
-          prevHref={prev ? `/domains/${objective.slug}/${prev.slug}` : null}
-          prevLabel={prev?.title ?? null}
-          nextHref={next ? `/domains/${objective.slug}/${next.slug}` : null}
-          nextLabel={next?.title ?? null}
-        />
-      </article>
+        <div className="mx-auto max-w-3xl">
+          <FooterNav
+            prevHref={prev ? `/domains/${objective.slug}/${prev.slug}` : null}
+            prevLabel={prev?.title ?? null}
+            nextHref={next ? `/domains/${objective.slug}/${next.slug}` : null}
+            nextLabel={next?.title ?? null}
+          />
+        </div>
+      </div>
     </AppShell>
   );
 }
